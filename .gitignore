@@ -1,0 +1,23 @@
+# Python缓存与本地环境
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 本地配置
+.env
+.env.*
+!.env.example
+
+# 运行数据库及其辅助文件
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+
+# 测试生成文件
+.pytest_cache/
+.coverage
+htmlcov/
