@@ -30,3 +30,10 @@ class ServiceRequestRead(ServiceRequestCreate):
     id: UUID
     received_at: AwareDatetime
     version: int = Field(ge=1)
+
+class LocationRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str = Field(min_length=1, max_length=64)
+    name: str = Field(min_length=1, max_length=120)
+    version: int = Field(ge=1)

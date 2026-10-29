@@ -4,14 +4,87 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ page_title }}</title>
+    <style>
+        body { max-width: 760px; margin: 32px auto; padding: 0 20px; font-family: sans-serif; line-height: 1.7; }
+        fieldset { border: 1px solid #ccc; padding: 20px; }
+        label { display: block; margin: 14px 0; }
+        select, textarea, input { display: block; box-sizing: border-box; width: 100%; padding: 8px; font: inherit; }
+        button { margin: 16px 8px 0 0; padding: 8px 16px; font: inherit; }
+        pre { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; }
+        code, dd { overflow-wrap: anywhere; }
+        #message { min-height: 2em; }
+    </style>
+    <script src="{{ url_for('static', path='/reports.js') }}" defer></script>
 </head>
 <body>
     <main>
         <h1>{{ page_title }}</h1>
-        <p>合成数据演示</p>
+        <p>合成数据演示 · 当前提供报事受理，证据研判与人工审核尚未接入。</p>
+        <p><a href="{{ url_for('reports_page') }}">查看已保存报事</a></p>
+        <h2>录入居民报事</h2>
+        <p>地点确认后从台账选择；没有合适点位时选“待核实”，并在原始描述中写清位置。</p>
 
-        <h2>居民报事</h2>
-        <p>报事受理与查询功能正在建设。</p>
+        <form id="report-form">
+            <fieldset id="report-fields">
+                <legend>报事内容</legend>
+
+                <label>服务类别
+                    <select name="service_category" required>
+                        <option value="">请选择</option>
+                        <option value="cleaning">环境保洁</option>
+                        <option value="water_supply">供水</option>
+                        <option value="other">其他事项</option>
+                    </select>
+                </label>
+                <label>发生地点
+                    <select name="location_id" disabled>
+                        <option value="">地点待核实</option>
+                    </select>
+                </label>
+                <p id="location-message" role="status">正在加载地点台账…</p>
+                <label>居民原始描述
+                    <textarea name="description" rows="5" maxlength="2000" required></textarea>
+                </label>
+
+                <label>观察时间（北京时间，可留空）
+                    <input name="observed_at" type="datetime-local">
+                </label>
+                <p>填写居民实际观察到问题的时间；不确定时留空，不用录入时间代替。</p>
+
+                <label>人员声明的风险情况
+                    <select name="risk_status" required>
+                        <option value="">请选择</option>
+                        <option value="unknown">信息不足，风险待核实</option>
+                        <option value="no_immediate_risk_reported">未报告即时风险</option>
+                        <option value="urgent">已报告紧急风险</option>
+                    </select>
+                </label>
+                <p>此项记录人员声明。紧急情况仍需按物业应急流程联系值班人员。</p>
+            </fieldset>
+
+            <button id="send-button" type="submit" disabled>提交报事</button>
+            <button id="new-button" type="button" hidden>录入下一条报事</button>
+        </form>
+
+        <p id="message" role="status" aria-live="polite"></p>
+        <p id="retry-note" hidden>
+            提交结果未确认时，请保留当前标签页；本页暂存支持刷新后继续重试。
+        </p>
+        <p id="submission-reference" hidden>
+            本次提交编号：<code id="request-id"></code>
+        </p>
+
+        <section id="receipt" hidden aria-labelledby="receipt-title">
+            <h2 id="receipt-title">保存回执</h2>
+            <dl>
+                <dt>报事编号</dt><dd id="report-id"></dd>
+                <dt>接收时间（北京时间）</dt><dd id="received-at"></dd>
+            </dl>
+            <h3>已保存的原始描述</h3>
+            <pre id="saved-description"></pre>
+        </section>
+
+        <noscript><p>请启用 JavaScript 后使用报事表单。</p></noscript>
     </main>
 </body>
 </html>
