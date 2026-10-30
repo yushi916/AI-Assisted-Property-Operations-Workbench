@@ -34,6 +34,8 @@
 浏览器暂存使用当前标签页的 sessionStorage，未确认结果时应保留该标签页。
 关闭标签页或浏览器后的草稿恢复尚未实现。
 
+已补充 Alembic 初始迁移、已有库结构核对、备份和版本登记；
+新增 9 项迁移相关测试，当前全量共 50 项。
 计划、执行、巡查、Agent、人工审核与专项检查仍待实现。
 当前使用合成数据进行本机演示，尚未完成身份权限和部署配置。
 
@@ -70,7 +72,9 @@ id 是服务端生成的报事编号，查询详情时填写这个 id。
 | `seed_demo_locations.py` | 显式加入合成地点，不覆盖既有地点或报事 |
 | `templates/` | 报事录入、列表和详情展示的网页结构 |
 | `static/` | 表单提交、恢复重试、列表与详情查询脚本 |
-| `tests/` | 输入、数据库及接口回归测试 |
+| `migrations/` | 保存固定的数据库迁移版本与连接入口 |
+| `adopt_intake_database.py` | 核对并备份已有第一阶段数据库，登记初始版本 |
+| `tests/` | 输入、数据库、接口与迁移回归测试 |
 
 ## 本地运行
 
@@ -82,18 +86,17 @@ python -m pip install -r requirements-dev.txt
 python -m pip check
 ```
 
-在项目根目录初始化当前演示表：
+全新数据库（尚无业务表），在项目根目录执行：
 
 ```bat
-python -c "import models; from database import Base, engine; Base.metadata.create_all(bind=engine)"
+python -m alembic upgrade head
 python seed_demo_locations.py
 ```
 
-建表命令创建缺失的表；地点脚本只加入缺少的合成点位。
-重复执行不会重复加入，也不会自动给旧报事关联地点。
-已有表的结构变更需要后续使用迁移管理。
+已有第一阶段数据库先按[数据库迁移说明](docs/database-migrations.md)完成结构核对、备份和初始版本登记。
+已经接入迁移管理的数据库，后续结构升级使用新的迁移与 `python -m alembic upgrade head`。
+地点脚本只加入缺少的合成点位，不覆盖既有地点，也不自动给旧报事关联地点。
 
-启动服务：
 
 ```bat
 python -m uvicorn main:app --host 127.0.0.1 --port 8000
@@ -112,22 +115,24 @@ python -m uvicorn main:app --host 127.0.0.1 --port 8000
 python -m unittest discover -s tests -v
 ```
 
-当前共 41 项：5 项输入、8 项数据库、20 项报事接口、
-1 项页面连接、7 项地点台账测试，已在 Windows / Python 3.12 环境运行通过。
+当前共50项：5项输入、8项数据库、20项报事接口、
+1项页面连接、7项地点台账、4项迁移、5项已有库接入测试。
+已在Windows / Python 3.12本机及Linux验证环境运行通过。
 数据库相关测试使用临时数据库。
 
 网页录入、地点选择、列表/详情、刷新恢复和服务停止后的同号重试已人工验收。
-本次断线恢复案例的实际数据库计数为 1。
-步骤和结果见 [第一阶段验收记录](docs/stage-1-validation.md)。
+本次断线恢复案例的实际数据库计数为1。
+报事步骤和结果见[第一阶段验收记录](docs/stage-1-validation.md)，
+迁移步骤和结果见[数据库迁移说明](docs/database-migrations.md)。
 
-仓库配置 GitHub Actions，在 Windows 和 Ubuntu 的 Python 3.12 环境自动运行上述 41 项测试。
-CI 实际运行结果以仓库 Actions 页面为准；该配置不执行浏览器端到端测试。
+仓库配置GitHub Actions，在Windows和Ubuntu的Python 3.12环境自动运行全部Python回归。
+CI实际结果以Actions页面为准；当前配置不执行浏览器端到端测试。
 
-当前验证未调用真实模型，不代表 AI 研判效果评估。
+当前验证未调用真实模型，不代表AI研判效果评估。
 
 ## 后续阶段
 
 1. 加入计划、执行、巡查页面及人工关联核查。
 2. 接入只读 Agent，保存建议、证据与失败记录。
 3. 完成人工修正、批准或退回、审计和内部核实待办。
-4. 完成专项准备检查、权限完善、迁移、部署与评估展示。
+4. 完成专项准备检查、权限完善、部署与评估展示；表结构变化持续通过迁移管理。
