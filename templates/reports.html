@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ page_title }}</title>
+    <style>
+        body { max-width: 1000px; margin: 32px auto; padding: 0 20px; font-family: sans-serif; line-height: 1.7; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; vertical-align: top; }
+        button { padding: 6px 12px; margin: 6px; font: inherit; }
+        pre, .description { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; }
+        dd { margin-bottom: 10px; overflow-wrap: anywhere; }
+        .table-scroll { overflow-x: auto; }
+    </style>
+    <script src="{{ url_for('static', path='/report-list.js') }}" defer></script>
+</head>
+<body>
+    <main>
+        <h1>{{ page_title }}</h1>
+        <p>合成数据演示 · 这里只查看已保存报事，尚未进行证据研判。</p>
+        <p><a href="{{ url_for('home') }}">返回报事录入</a></p>
+
+        <button id="refresh-list" type="button">刷新当前页</button>
+        <p id="list-message" role="status" aria-live="polite"></p>
+
+        <div class="table-scroll">
+            <table>
+                <caption>已保存报事，按接收时间从新到旧排列</caption>
+                <thead>
+                    <tr>
+                        <th>接收时间（北京时间）</th>
+                        <th>类别</th>
+                        <th>原文摘要</th>
+                        <th>人员声明风险</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="report-rows"></tbody>
+            </table>
+        </div>
+
+        <nav aria-label="报事分页">
+            <button id="previous-page" type="button" disabled>上一页</button>
+            <span id="page-label"></span>
+            <button id="next-page" type="button" disabled>下一页</button>
+        </nav>
+
+        <p id="detail-message" role="status" aria-live="polite"></p>
+        <section id="report-detail" hidden aria-labelledby="detail-title">
+            <h2 id="detail-title" tabindex="-1">报事详情</h2>
+            <dl id="detail-fields"></dl>
+            <h3>已保存的原始描述</h3>
+            <pre id="detail-description"></pre>
+        </section>
+
+        <noscript><p>请启用 JavaScript 后查看报事。</p></noscript>
+    </main>
+</body>
+</html>
