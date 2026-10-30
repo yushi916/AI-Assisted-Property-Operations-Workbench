@@ -77,3 +77,60 @@ class ServiceRequest(Base):
     version: Mapped[int] = mapped_column(Integer, default=1)
 
     location: Mapped[Location | None] = relationship()
+
+
+
+class PlanInstance(Base):
+    __tablename__ = "plan_instances"
+    __table_args__ = (
+        CheckConstraint("version >= 1", name="ck_plan_version"),
+        CheckConstraint(
+            "length(title) BETWEEN 1 AND 120", name="ck_plan_title"
+        ),
+        CheckConstraint(
+            "length(requirements) BETWEEN 1 AND 2000",
+            name="ck_plan_requirements",
+        ),
+        CheckConstraint(
+            "length(owner_name) BETWEEN 1 AND 120", name="ck_plan_owner"
+        ),
+        CheckConstraint(
+            "service_category IN ('cleaning', 'water_supply', 'other')",
+            name="ck_plan_category",
+        ),
+        CheckConstraint(
+            "plan_kind IN ('routine', 'special')", name="ck_plan_kind"
+        ),
+        CheckConstraint(
+            "planned_end_at > planned_start_at", name="ck_plan_period"
+        ),
+    )
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    request_id: Mapped[UUID] = mapped_column(Uuid, unique=True)
+    title: Mapped[str] = mapped_column(String(120))
+    service_category: Mapped[str] = mapped_column(String(32))
+    plan_kind: Mapped[str] = mapped_column(String(20), default="routine")
+    requirements: Mapped[str] = mapped_column(Text)
+    owner_name: Mapped[str] = mapped_column(String(120))
+    planned_start_at: Mapped[datetime] = mapped_column(UTCDateTime())
+    planned_end_at: Mapped[datetime] = mapped_column(UTCDateTime())
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utc_now)
+    version: Mapped[int] = mapped_column(Integer, default=1)
+
+    locations: Mapped[list["PlanLocation"]] = relationship(back_populates="plan")
+
+
+
+class PlanLocation(Base):
+    __tablename__ = "plan_locations"
+
+    plan_id: Mapped[UUID] = mapped_column(
+        ForeignKey("plan_instances.id"), primary_key=True
+    )
+    location_id: Mapped[str] = mapped_column(
+        ForeignKey("locations.id"), primary_key=True
+    )
+
+    plan: Mapped[PlanInstance] = relationship(back_populates="locations")
+    location: Mapped[Location] = relationship()
