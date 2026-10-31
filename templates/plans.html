@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ page_title }}</title>
+    <style>
+        body { max-width: 760px; margin: 32px auto; padding: 0 20px; font-family: sans-serif; line-height: 1.7; }
+        fieldset { border: 1px solid #ccc; padding: 20px; }
+        label { display: block; margin: 14px 0; }
+        select, textarea, input { display: block; box-sizing: border-box; width: 100%; padding: 8px; font: inherit; }
+        button { margin: 16px 8px 0 0; padding: 8px 16px; font: inherit; }
+        pre { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; }
+        code, dd { overflow-wrap: anywhere; }
+        #message { min-height: 2em; }
+    </style>
+    <script src="{{ url_for('static', path='/plans.js') }}" defer></script>
+    <script src="{{ url_for('static', path='/plan-list.js') }}" type="module"></script>
+</head>
+<body>
+    <main>
+        <h1>{{ page_title }}</h1>
+        <p>合成数据演示 · 记录一次具体计划，后续分别录入执行和巡查证据。</p>
+        <p><a href="/">返回报事录入</a> · <a href="{{ url_for('reports_page') }}">查看报事记录</a></p>
+
+        <form id="plan-form">
+            <fieldset id="plan-fields">
+                <legend>计划内容</legend>
+                <label>计划标题
+                    <input name="title" maxlength="120" required>
+                </label>
+                <label>服务类别
+                    <select name="service_category" required>
+                        <option value="">请选择</option>
+                        <option value="cleaning">环境保洁</option>
+                        <option value="water_supply">供水</option>
+                        <option value="other">其他事项</option>
+                    </select>
+                </label>
+                <label>计划种类
+                    <select name="plan_kind" required>
+                        <option value="routine">日常计划</option>
+                        <option value="special">专项计划</option>
+                    </select>
+                </label>
+                <label>具体要求
+                    <textarea name="requirements" rows="4" maxlength="2000" required></textarea>
+                </label>
+                <label>负责人姓名
+                    <input name="owner_name" maxlength="120" required>
+                </label>
+                <label>覆盖地点（至少一处）
+                    <select name="location_ids" multiple size="5" required disabled></select>
+                </label>
+                <p>Windows 按住 Ctrl 点击，可选择或取消多个地点。</p>
+                <p>计划必须有明确覆盖地点；居民报事仍可保留地点待核实。</p>
+                <label>计划开始时间（北京时间）
+                    <input name="planned_start_at" type="datetime-local" required>
+                </label>
+                <label>计划结束时间（北京时间）
+                    <input name="planned_end_at" type="datetime-local" required>
+                </label>
+            </fieldset>
+            <p id="location-message" role="status">正在加载地点台账…</p>
+            <button id="reload-locations" type="button">重新加载地点</button>
+            <button id="send-button" type="submit" disabled>保存计划</button>
+            <button id="new-button" type="button" hidden>录入下一项计划</button>
+        </form>
+
+        <p id="message" role="status" aria-live="polite"></p>
+        <p id="retry-note" hidden>结果未确认时请保留当前标签页；刷新后可继续原样重试。</p>
+        <p id="submission-reference" hidden>本次提交编号：<code id="request-id"></code></p>
+
+        <section id="receipt" hidden aria-labelledby="receipt-title">
+            <h2 id="receipt-title">本次保存回执</h2>
+            <dl>
+                <dt>计划编号</dt><dd id="plan-id"></dd>
+                <dt>计划标题</dt><dd id="saved-title"></dd>
+                <dt>负责人</dt><dd id="saved-owner"></dd>
+                <dt>覆盖地点</dt><dd id="saved-locations"></dd>
+                <dt>开始时间（北京时间）</dt><dd id="saved-start"></dd>
+                <dt>结束时间（北京时间）</dt><dd id="saved-end"></dd>
+                <dt>创建时间（北京时间）</dt><dd id="created-at"></dd>
+            </dl>
+            <h3>已保存的计划要求</h3>
+            <pre id="saved-requirements"></pre>
+        </section>
+        <noscript><p>请启用 JavaScript 后使用计划表单。</p></noscript>
+        <section aria-labelledby="plan-list-title">
+            <h2 id="plan-list-title">已保存计划</h2>
+            <p>保存后点击刷新，回到第一页查看最新计划。计划记录不代表已完成执行或巡查。</p>
+            <button id="refresh-plans" type="button">刷新计划列表</button>
+            <p id="plan-list-message" role="status" aria-live="polite"></p>
+
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; text-align: left;">
+                    <caption>按创建时间从新到旧排列</caption>
+                    <thead>
+                        <tr>
+                            <th>创建时间（北京时间）</th>
+                            <th>计划标题</th>
+                            <th>负责人</th>
+                            <th>覆盖地点数</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="plan-rows"></tbody>
+                </table>
+            </div>
+
+            <nav aria-label="计划分页">
+                <button id="plan-previous" type="button" disabled>上一页</button>
+                <span id="plan-page-label"></span>
+                <button id="plan-next" type="button" disabled>下一页</button>
+            </nav>
+        </section>
+
+        <p id="plan-detail-message" role="status" aria-live="polite"></p>
+        <section id="plan-detail" hidden aria-labelledby="plan-detail-title">
+            <h2 id="plan-detail-title" tabindex="-1">计划详情</h2>
+            <dl id="plan-detail-fields"></dl>
+            <h3>已保存的计划要求</h3>
+            <pre id="plan-detail-requirements"></pre>
+        </section>
+    </main>
+</body>
+</html>

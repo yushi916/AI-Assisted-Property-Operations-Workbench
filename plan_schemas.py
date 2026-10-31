@@ -49,3 +49,8 @@ class PlanCreate(BaseModel):
         if end <= start:
             raise ValueError("计划结束时间必须晚于开始时间")
         return self
+
+class PlanRead(PlanCreate):
+    id: UUID
+    created_at: AwareDatetime
+    version: int = Field(ge=1)
