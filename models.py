@@ -33,11 +33,36 @@ class Location(Base):
     __tablename__ = "locations"
     __table_args__ = (
         CheckConstraint("version >= 1", name="ck_location_version"),
+        CheckConstraint(
+            "parent_id IS NULL OR parent_id <> id",
+            name="ck_location_not_self",
+        ),
+        CheckConstraint(
+            """kind IN (
+                'community', 'area', 'building', 'unit',
+                'room', 'public_space', 'unknown'
+            )""",
+            name="ck_location_kind",
+        ),
+        CheckConstraint(
+            """(kind IN ('community', 'unknown') AND parent_id IS NULL)
+            OR
+            (kind IN ('area', 'building', 'unit', 'room', 'public_space')
+             AND parent_id IS NOT NULL)""",
+            name="ck_location_parent_presence",
+        ),
     )
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     name: Mapped[str] = mapped_column(String(120))
     version: Mapped[int] = mapped_column(Integer, default=1)
+
+    parent_id: Mapped[str | None] = mapped_column(
+        ForeignKey("locations.id", name="fk_location_parent")
+    )
+    kind: Mapped[str] = mapped_column(
+        String(20), default="unknown", server_default="unknown"
+    )
 
 
 class ServiceRequest(Base):

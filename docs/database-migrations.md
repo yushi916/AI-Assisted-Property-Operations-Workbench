@@ -78,7 +78,7 @@ GitHub Actions结果以对应提交的实际运行记录为准。
 routine/special仅表示计划种类，专项准备检查尚未实现。
 
 已有0001数据库升级时，先停止服务写入，使用SQLite backup生成备份，
-保留备份完整路径，再运行python -m alembic upgrade head。
+保留备份完整路径，再运行python -m alembic upgrade 0002_plans。
 使用python -m alembic current确认实际库为0002_plans，
 并与备份逐字段比较locations和service_requests的全部记录。
 核对失败应保留现场查明原因，不自动覆盖当前库。
@@ -109,3 +109,30 @@ Windows本机及Linux验证环境通过。
 本次原有3条地点、6条报事的全部字段保持一致。
 该核对不统计新增的计划表，也不替代迁移失败回滚等临时库测试。
 数据库和备份继续保留本机，不提交Git。
+
+
+## 0003_location_hierarchy：兼容增加地点层级字段
+
+版本链为0001_intake → 0002_plans → 0003_location_hierarchy。
+在locations原表增加parent_id与kind；原id/name/version及其他业务表保持。
+parent_id为空或引用已有地点，禁止地点引用自己；kind限制为明确枚举，
+小区根及未分类地点不填父地点，其余类型必须填写父地点。
+旧地点默认kind=unknown、parent_id为空，不根据名称猜测归属。
+父地点类型、多节点环和完整地址展示由后续业务层补齐。
+
+已有0002数据库升级前，停止服务写入并使用SQLite backup生成新备份。
+使用verify_location_upgrade.py与--expected-version 0002_plans核对备份和当前库；
+成功后执行python -m alembic upgrade 0003_location_hierarchy，
+再以同一脚本默认的0003预期版本核对原字段、完整性、外键和新列默认值。
+脚本只读；发现差异时保留现场核实，不自动恢复或覆盖当前库。
+
+2026-11-01实际库验收：0003_location_hierarchy(head)。
+对照备份data/backups/property-before-alembic-2a6608f8c70f414cb8f6cdf7c673e515.db，
+原3条地点、6条报事、3条计划、6条覆盖关联的全部原字段保留；新列默认值正确。
+
+新增8项地点输入、6项地点迁移及3项地点模型测试，当前全量99项。
+迁移测试验证中途失败回滚、原字段保留、重复升级、约束及降级保护；
+模型测试对照最新迁移与完整模型结构，并检查同名房间和已有引用。
+历史0001/0002测试使用固定版本和对应旧字段准备数据。
+已登记分类或父关系时，0003的自动降级会拒绝，防止丢失层级信息。
+数据库和备份继续保留本机；CI结果按本轮提交单独核对。

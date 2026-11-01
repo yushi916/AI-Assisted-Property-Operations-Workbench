@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 
 import adopt_intake_database as adoption
 from database import create_db_engine, engine as project_engine
-from models import Location, ServiceRequest
+from models import ServiceRequest
 
 
 class DatabaseAdoptionTests(unittest.TestCase):
@@ -19,31 +19,29 @@ class DatabaseAdoptionTests(unittest.TestCase):
         self.folder = tempfile.TemporaryDirectory()
         self.path = Path(self.folder.name) / "case.db"
         self.guard = patch.object(
-            project_engine,
-            "connect",
+            project_engine, "connect",
             side_effect=AssertionError("接管测试禁止连接项目数据库"),
         )
         self.guard.start()
         self.addCleanup(self.guard.stop)
-
         self.engine = create_db_engine(self.path)
+
         with self.engine.begin() as connection:
             adoption.run_alembic(connection, "upgrade")
             connection.exec_driver_sql("DROP TABLE alembic_version")
+            connection.exec_driver_sql(
+                "INSERT INTO locations (id, name, version) VALUES (?, ?, ?)",
+                ("LOC-A", "合成A区大堂", 1),
+            )
 
         with Session(self.engine) as db, db.begin():
-            db.add(Location(id="LOC-A", name="合成A区大堂"))
-            db.flush()
             for description, location_id in (
                 ("  合成报事一：保留空格。", "LOC-A"),
                 ("合成报事二：位置未知。", None),
             ):
                 db.add(ServiceRequest(
-                    request_id=uuid4(),
-                    service_category="cleaning",
-                    description=description,
-                    source="web",
-                    risk_status="unknown",
+                    request_id=uuid4(), service_category="cleaning",
+                    description=description, source="web", risk_status="unknown",
                     location_id=location_id,
                 ))
 

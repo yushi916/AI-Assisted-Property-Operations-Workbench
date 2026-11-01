@@ -38,7 +38,7 @@ class PlanMigrationTests(unittest.TestCase):
         self.engine.dispose()
         self.folder.cleanup()
 
-    def upgrade(self, target="head"):
+    def upgrade(self, target="0002_plans"):
         with self.engine.begin() as connection:
             self.config.attributes["connection"] = connection
             try:
@@ -61,12 +61,13 @@ class PlanMigrationTests(unittest.TestCase):
 
     def seed_legacy(self):
         self.upgrade("0001_intake")
+        with self.engine.begin() as connection:
+            connection.exec_driver_sql(
+                "INSERT INTO locations (id, name, version) VALUES (?, ?, ?)",
+                [("LOC-A-LOBBY", "A区大堂", 1),
+                 ("LOC-B-LOBBY", "B区大堂", 1)],
+            )
         with Session(self.engine) as db, db.begin():
-            db.add_all([
-                Location(id="LOC-A-LOBBY", name="A区大堂"),
-                Location(id="LOC-B-LOBBY", name="B区大堂"),
-            ])
-            db.flush()
             for location_id, observed in (
                 ("LOC-A-LOBBY", datetime.fromisoformat(
                     "2026-10-29T09:50:00+08:00"
@@ -101,7 +102,7 @@ class PlanMigrationTests(unittest.TestCase):
         values.update(changes)
         return PlanInstance(**values)
 
-    def test_fresh_upgrade_matches_current_models(self):
+    def test_plan_migration_matches_plan_models(self):
         self.upgrade()
         self.assertEqual(self.heads(), ("0002_plans",))
         self.assertEqual(
@@ -112,7 +113,10 @@ class PlanMigrationTests(unittest.TestCase):
         try:
             Base.metadata.create_all(reference)
             with self.engine.connect() as actual, reference.connect() as expected:
-                self.assertEqual(schema_signature(actual), schema_signature(expected))
+                actual_schema = schema_signature(actual)
+                expected_schema = schema_signature(expected)
+                for table in ("plan_instances", "plan_locations"):
+                    self.assertEqual(actual_schema[table], expected_schema[table])
         finally:
             reference.dispose()
 
