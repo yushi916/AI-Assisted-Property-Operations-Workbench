@@ -17,7 +17,7 @@ upgrade执行迁移脚本；stamp只登记版本。
 
 ```bat
 python -m alembic upgrade head
-python seed_demo_locations.py
+python seed_demo_location_hierarchy.py
 ```
 
 地点初始化保留既有地点和报事，不自动给未知地点补关联。
@@ -96,7 +96,7 @@ Windows本机及Linux验证环境通过。
 
 ## 2026-10-31 实际数据库数据保留核对
 
-当前数据库版本为0002_plans。
+当次核对时数据库版本为0002_plans。
 用于对照的备份为data/backups/property-before-alembic-11ff9fc11d3c486290794782ab58e49b.db，
 已只读确认其版本为0001_intake。
 
@@ -118,7 +118,8 @@ Windows本机及Linux验证环境通过。
 parent_id为空或引用已有地点，禁止地点引用自己；kind限制为明确枚举，
 小区根及未分类地点不填父地点，其余类型必须填写父地点。
 旧地点默认kind=unknown、parent_id为空，不根据名称猜测归属。
-父地点类型、多节点环和完整地址展示由后续业务层补齐。
+该迁移负责字段与数据库约束；父地点类型、多节点环和完整地址现由业务层校验，
+见[地点层级与完整地址验收](location-hierarchy-data-validation.md)。
 
 已有0002数据库升级前，停止服务写入并使用SQLite backup生成新备份。
 使用verify_location_upgrade.py与--expected-version 0002_plans核对备份和当前库；
@@ -130,9 +131,23 @@ parent_id为空或引用已有地点，禁止地点引用自己；kind限制为�
 对照备份data/backups/property-before-alembic-2a6608f8c70f414cb8f6cdf7c673e515.db，
 原3条地点、6条报事、3条计划、6条覆盖关联的全部原字段保留；新列默认值正确。
 
-新增8项地点输入、6项地点迁移及3项地点模型测试，当前全量99项。
+新增8项地点输入、6项地点迁移及3项地点模型测试，该结构迁移检查点全量99项。
 迁移测试验证中途失败回滚、原字段保留、重复升级、约束及降级保护；
 模型测试对照最新迁移与完整模型结构，并检查同名房间和已有引用。
 历史0001/0002测试使用固定版本和对应旧字段准备数据。
 已登记分类或父关系时，0003的自动降级会拒绝，防止丢失层级信息。
 数据库和备份继续保留本机；CI结果按本轮提交单独核对。
+
+## 2026-11-01 合成台账维护：结构版本仍为0003
+
+本次是台账数据维护，没有新增迁移或重建数据库。
+使用同为0003的新备份data/backups/property-before-alembic-a801f27975774c96b49140db30e55fb9.db。
+应用前用verify_demo_location_hierarchy.py --before严格核对；
+运行seed_demo_location_hierarchy.py，首次新增9/更新3，重复执行新增0/更新0；
+应用后以同一备份核对，地点从3条增至12条，原6条报事、3条计划、6条覆盖关联全部字段保持。
+原地点编号与名称保留，分类/归属按合成配置调整，版本各加1。
+
+verify_location_upgrade.py用于0002到0003结构迁移当时的默认值验收；
+verify_demo_location_hierarchy.py用于本次台账数据调整的前后核对。
+网页验收后来新增的合成业务记录属于正常变化，不能继续要求当前库与旧备份完全相等。
+新的数据维护需使用该次操作的新备份与明确变更规则。

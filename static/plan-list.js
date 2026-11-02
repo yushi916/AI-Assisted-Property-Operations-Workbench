@@ -35,9 +35,15 @@ async function getJSON(path) {
 async function locationText(ids) {
     try {
         const locations = await getJSON("/api/locations");
-        const names = new Map(locations.map(item => [item.id, item.name]));
+        const names = new Map(locations.map(item => {
+            if (typeof item.display_path !== "string") {
+                throw new Error("地点格式异常");
+            }
+            return [item.id, item.display_path];
+        }));
         return ids.map(id => names.has(id)
-            ? `${names.get(id)}（${id}）` : `${id}（当前台账未查到）`).join("、");
+            ? `${names.get(id)}（${id}）`
+            : `${id}（当前台账未查到）`).join("、");
     } catch {
         return ids.map(id => `${id}（名称暂无法读取）`).join("、");
     }

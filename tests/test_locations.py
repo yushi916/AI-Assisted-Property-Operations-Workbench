@@ -72,7 +72,10 @@ class TestLocations(unittest.TestCase):
         response = self.client.get("/api/locations")
         self.assertEqual(response.status_code, 200)
         expected = [
-            {"id": location_id, "name": name, "version": 1}
+            {
+                "id": location_id, "name": name, "version": 1,
+                "kind": "unknown", "parent_id": None, "display_path": name,
+            }
             for location_id, name in sorted(DEMO_LOCATIONS)
         ]
         self.assertEqual(response.json(), expected)
@@ -161,3 +164,99 @@ class TestLocations(unittest.TestCase):
         invalid = self.create_report("LOC-NOT-IN-CATALOG")
         self.assertEqual(invalid.status_code, 422, invalid.text)
         self.assertEqual(self.counts(), (3, 1))
+
+    def seed_hierarchy(self):
+        with self.sessions.begin() as db:
+            db.add(Location(id="C", name="合成小区", kind="community"))
+            db.flush()
+
+            db.add_all([
+                Location(
+                    id="B1", name="1栋",
+                    kind="building", parent_id="C",
+                ),
+                Location(
+                    id="B2", name="2栋",
+                    kind="building", parent_id="C",
+                ),
+            ])
+            db.flush()
+
+            db.add_all([
+                Location(
+                    id="R1", name="302室",
+                    kind="room", parent_id="B1", version=3,
+                ),
+                Location(
+                    id="R2", name="302室",
+                    kind="room", parent_id="B2",
+                ),
+            ])
+
+    def location_rows(self):
+        with self.sessions() as db:
+            return db.execute(
+                select(
+                    Location.id,
+                    Location.name,
+                    Location.kind,
+                    Location.parent_id,
+                    Location.version,
+                ).order_by(Location.id)
+            ).all()
+
+    def test_catalog_returns_full_paths_without_changing_original_fields(self):
+        self.seed_hierarchy()
+        before = self.location_rows()
+
+        response = self.client.get("/api/locations")
+
+        self.assertEqual(response.status_code, 200, response.text)
+        rows = {item["id"]: item for item in response.json()}
+        self.assertEqual(rows["R1"], {
+            "id": "R1",
+            "name": "302室",
+            "version": 3,
+            "kind": "room",
+            "parent_id": "B1",
+            "display_path": "合成小区 / 1栋 / 302室",
+        })
+        self.assertEqual(
+            rows["R2"]["display_path"],
+            "合成小区 / 2栋 / 302室",
+        )
+        self.assertEqual(self.location_rows(), before)
+        self.assertEqual(self.counts(), (5, 0))
+
+    def test_wrong_parent_kind_returns_503_without_repairing_data(self):
+        self.seed_hierarchy()
+        with self.sessions.begin() as db:
+            db.get(Location, "R2").parent_id = "R1"
+        before = self.location_rows()
+
+        response = self.client.get("/api/locations")
+
+        self.assertEqual(response.status_code, 503)
+        self.assertIn("父地点类型不适用", response.json()["detail"])
+        self.assertEqual(self.location_rows(), before)
+        self.assertEqual(self.counts(), (5, 0))
+
+    def test_cycle_returns_503_and_is_documented_without_writes(self):
+        self.seed_hierarchy()
+        with self.sessions.begin() as db:
+            db.get(Location, "B1").parent_id = "B2"
+            db.get(Location, "B2").parent_id = "B1"
+        before = self.location_rows()
+
+        response = self.client.get("/api/locations")
+
+        self.assertEqual(response.status_code, 503)
+        self.assertIn("存在循环", response.json()["detail"])
+        self.assertEqual(self.location_rows(), before)
+
+        paths = self.client.get("/openapi.json").json()["paths"]
+        self.assertIn(
+            "503",
+            paths["/api/locations"]["get"]["responses"],
+        )
+        self.assertEqual(self.counts(), (5, 0))

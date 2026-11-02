@@ -2,6 +2,7 @@ from typing import Literal
 from uuid import UUID
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator
+from location_schemas import LocationKind
 
 
 class ServiceRequestCreate(BaseModel):
@@ -37,3 +38,6 @@ class LocationRead(BaseModel):
     id: str = Field(min_length=1, max_length=64)
     name: str = Field(min_length=1, max_length=120)
     version: int = Field(ge=1)
+    kind: LocationKind
+    parent_id: str | None = Field(default=None, min_length=1, max_length=64)
+    display_path: str = Field(min_length=1)

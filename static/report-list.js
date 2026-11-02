@@ -45,8 +45,11 @@ async function getLocationText(id) {
     try {
         const locations = await getJSON("/api/locations");
         const location = locations.find(item => item.id === id);
+        if (location && typeof location.display_path !== "string") {
+            throw new Error("地点格式异常");
+        }
         return location
-            ? `${location.name}（${id}）`
+            ? `${location.display_path}（${id}）`
             : `${id}（当前台账未查到）`;
     } catch {
         return `${id}（地点名称暂无法读取）`;

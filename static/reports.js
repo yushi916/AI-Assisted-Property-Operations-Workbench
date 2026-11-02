@@ -49,13 +49,13 @@ async function loadLocations() {
         const options = [unknown];
 
         for (const location of locations) {
-            if (typeof location.id !== "string" || typeof location.name !== "string") {
+            if (typeof location.id !== "string" || typeof location.display_path !== "string") {
                 throw new Error("地点格式异常");
             }
 
             const option = document.createElement("option");
             option.value = location.id;
-            option.textContent = location.name;
+            option.textContent = location.display_path;
             options.push(option);
         }
 
