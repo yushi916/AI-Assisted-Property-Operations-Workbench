@@ -159,3 +159,75 @@ class PlanLocation(Base):
 
     plan: Mapped[PlanInstance] = relationship(back_populates="locations")
     location: Mapped[Location] = relationship()
+
+
+class ExecutionRecord(Base):
+    __tablename__ = "execution_records"
+    __table_args__ = (
+        CheckConstraint("version >= 1", name="ck_execution_version"),
+        CheckConstraint(
+            "length(executor_name) BETWEEN 1 AND 120",
+            name="ck_execution_executor",
+        ),
+        CheckConstraint(
+            "length(description) BETWEEN 1 AND 2000",
+            name="ck_execution_description",
+        ),
+        CheckConstraint(
+            "completion_claim IN ('completed', 'partially_completed', 'not_completed', 'unknown')",
+            name="ck_execution_claim",
+        ),
+        CheckConstraint(
+            "completion_claim = 'completed' OR claimed_finished_at IS NULL",
+            name="ck_execution_finish_claim",
+        ),
+        CheckConstraint(
+            "claimed_started_at IS NULL OR claimed_finished_at IS NULL "
+            "OR claimed_finished_at >= claimed_started_at",
+            name="ck_execution_time_order",
+        ),
+        CheckConstraint(
+            "claimed_started_at IS NULL OR claimed_started_at <= recorded_at",
+            name="ck_execution_start_recorded",
+        ),
+        CheckConstraint(
+            "claimed_finished_at IS NULL OR claimed_finished_at <= recorded_at",
+            name="ck_execution_finish_recorded",
+        ),
+    )
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    request_id: Mapped[UUID] = mapped_column(Uuid, unique=True)
+    plan_id: Mapped[UUID] = mapped_column(
+        ForeignKey("plan_instances.id"), index=True
+    )
+    executor_name: Mapped[str] = mapped_column(String(120))
+    description: Mapped[str] = mapped_column(Text)
+    completion_claim: Mapped[str] = mapped_column(String(32))
+    claimed_started_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    claimed_finished_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    recorded_at: Mapped[datetime] = mapped_column(
+        UTCDateTime(), default=utc_now
+    )
+    version: Mapped[int] = mapped_column(Integer, default=1)
+
+    plan: Mapped[PlanInstance] = relationship()
+    locations: Mapped[list["ExecutionLocation"]] = relationship(
+        back_populates="execution"
+    )
+
+
+class ExecutionLocation(Base):
+    __tablename__ = "execution_locations"
+
+    execution_id: Mapped[UUID] = mapped_column(
+        ForeignKey("execution_records.id"), primary_key=True
+    )
+    location_id: Mapped[str] = mapped_column(
+        ForeignKey("locations.id"), primary_key=True
+    )
+
+    execution: Mapped[ExecutionRecord] = relationship(
+        back_populates="locations"
+    )
+    location: Mapped[Location] = relationship()
