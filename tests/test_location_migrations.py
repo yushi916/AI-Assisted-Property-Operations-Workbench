@@ -35,7 +35,7 @@ class LocationMigrationTests(unittest.TestCase):
         self.engine.dispose()
         self.folder.cleanup()
 
-    def migrate(self, target="head", action="upgrade"):
+    def migrate(self, target="0003_location_hierarchy", action="upgrade"):
         with self.engine.begin() as connection:
             self.config.attributes["connection"] = connection
             try:

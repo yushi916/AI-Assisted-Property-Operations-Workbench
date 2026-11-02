@@ -151,3 +151,53 @@ verify_location_upgrade.py用于0002到0003结构迁移当时的默认值验收�
 verify_demo_location_hierarchy.py用于本次台账数据调整的前后核对。
 网页验收后来新增的合成业务记录属于正常变化，不能继续要求当前库与旧备份完全相等。
 新的数据维护需使用该次操作的新备份与明确变更规则。
+
+
+## 0004_execution_records：执行证据数据层
+
+日期：2026-11-02。版本从0003_location_hierarchy升级至0004_execution_records。
+新增execution_records与execution_locations，旧四张业务表结构保持。
+执行主记录关联一次计划，点位表只保存本条执行记录明确涉及的地点。
+未知点位保留为空，未知声称时间保留为空，不用计划范围或录入时间填补。
+completed表示执行人声称完成，不能直接作为独立核实结果。
+
+输入校验、ORM、迁移与只读升级核对已实现；执行API和网页尚未接线。
+计划存在性、执行点位属于计划的范围校验，以及完整HTTP幂等语义将在API实现。
+新增表不改变原计划版本及覆盖地点，也不自动派工或标记计划完成。
+已有任何执行记录时，即使点位未知，0004自动降级也会拒绝删除证据。
+
+### 实际数据库验收
+
+本次新备份：data/backups/property-before-alembic-c311abd931054d94bd19fdf4a6f8c316.db。
+备份版本为0003；升级前核对通过后，执行alembic upgrade 0004_execution_records。
+实际current已确认0004_execution_records(head)。
+verify_execution_upgrade.py升级前使用--before，升级后使用同一备份且不加此参数。
+两次核对均通过旧表结构、全部字段和记录、数据库完整性与外键检查。
+
+| 表 | 升级前备份 | 升级后当前库 | 结果 |
+| --- | --- | --- | --- |
+| locations | 12 | 12 | 全字段一致 |
+| service_requests | 7 | 7 | 全字段一致 |
+| plan_instances | 5 | 5 | 全字段一致 |
+| plan_locations | 8 | 8 | 全字段一致 |
+| execution_records | 尚无此表 | 0 | 新表为空 |
+| execution_locations | 尚无此表 | 0 | 新表为空 |
+
+此核对适用于本次纯结构升级；开始业务录入后，新记录属于正常变化。
+核对工具使用只读连接，发现差异会报错，不删除记录或覆盖当前库。
+数据库和备份保留本机，不提交Git。
+
+### 开发步骤简记：执行记录数据层
+
+| 顺序 | 代码或操作 | 主要验证 |
+| --- | --- | --- |
+| 1 | execution_schemas.py定义输入 | 声称枚举、未知信息、原文和带时区时间规则，9项 |
+| 2 | 编写0004迁移，先在临时库升级 | 约束、旧值保留、失败回滚及降级保护，8项 |
+| 3 | models.py补执行模型，更新当前表清单 | 最新六表与迁移一致，ORM读回、UTC和事务，6项 |
+| 4 | 实际库确认0003，使用SQLite backup创建新备份 | 升级前只读核对结构及原记录 |
+| 5 | 实际库执行alembic upgrade 0004_execution_records | 这一步改变实际数据库结构及版本 |
+| 6 | verify_execution_upgrade.py进行升级后只读对照 | 原四表全字段保留，新两表为空；工具自身有6项测试 |
+
+新增29项，加上此前117项，全量146项已在Linux验证环境通过。
+上述实际升级及前后JSON由Windows本机完成并提供；CI结果按对应提交另行核对。
+执行记录整轮仍需继续接口、页面和业务范围校验。

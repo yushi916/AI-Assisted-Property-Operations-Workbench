@@ -33,7 +33,7 @@ class LocationModelTests(unittest.TestCase):
         with self.engine.begin() as connection:
             config.attributes["connection"] = connection
             try:
-                command.upgrade(config, "head")
+                command.upgrade(config, "0003_location_hierarchy")
             finally:
                 config.attributes.pop("connection", None)
 
@@ -41,7 +41,7 @@ class LocationModelTests(unittest.TestCase):
         self.engine.dispose()
         self.folder.cleanup()
 
-    def test_latest_migration_matches_all_current_models(self):
+    def test_location_migration_matches_its_original_tables(self):
         reference = create_db_engine(Path(self.folder.name) / "reference.db")
         try:
             Base.metadata.create_all(reference)
@@ -50,7 +50,13 @@ class LocationModelTests(unittest.TestCase):
                     MigrationContext.configure(actual).get_current_heads(),
                     ("0003_location_hierarchy",),
                 )
-                self.assertEqual(schema_signature(actual), schema_signature(expected))
+                tables = {"locations", "service_requests", "plan_instances", "plan_locations"}
+                actual_schema = schema_signature(actual)
+                expected_schema = schema_signature(expected)
+                self.assertEqual(set(actual_schema), tables)
+                self.assertEqual(
+                    actual_schema, {name: expected_schema[name] for name in tables}
+                )
         finally:
             reference.dispose()
 
