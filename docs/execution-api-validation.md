@@ -29,7 +29,8 @@ completed表示填报人的完成声称，后续仍需结合巡查和其他证�
 失败回滚、并发提交、数据库锁、参数边界、分页、完整点位及只读查询。
 数据库测试使用临时库，并禁止连接默认项目数据库。
 
-全量共161项，Windows/Python 3.12本机由使用者确认通过。
+API检查点全量共161项，Windows/Python 3.12本机由使用者确认通过。
+后续网页检查点为162项Python与15项JavaScript，见[执行记录开发与验收](execution-records-workflow.md)。
 本检查点的新CI结果以对应提交的Actions记录为准。
 
 ## 实际接口验收
@@ -53,4 +54,5 @@ completion_claim为unknown，location_ids为空列表，两个声称时间均为
 recorded_at为2026-11-03T07:16:00.659656Z，version为1。
 
 实际库已开始保存合成执行证据；升级当时的新表为空是历史验收结果。
-执行页面、巡查、履约核对、报事关联、Agent及人工审核继续分阶段实现。
+执行页面已接通录入、回执、按计划查询与详情，见[执行记录开发与验收](execution-records-workflow.md)。
+巡查、履约核对、报事关联、Agent及人工审核继续分阶段实现。

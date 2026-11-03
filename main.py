@@ -65,3 +65,16 @@ def plans_page(request: Request):
         name="plans.html",
         context={"page_title": "录入物业计划"},
     )
+
+@app.get(
+    "/executions",
+    response_class=HTMLResponse,
+    include_in_schema=False,
+    name="executions_page",
+)
+def executions_page(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="executions.html",
+        context={"page_title": "计划执行记录"},
+    )

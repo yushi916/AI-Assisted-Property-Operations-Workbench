@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ page_title }}</title>
+    <style>
+        body { max-width: 960px; margin: 32px auto; padding: 0 20px; font-family: sans-serif; line-height: 1.7; }
+        button { margin: 8px; padding: 8px 12px; font: inherit; }
+        table { width: 100%; text-align: left; border-collapse: collapse; }
+        th, td { padding: 8px; border-bottom: 1px solid #ddd; vertical-align: top; }
+        pre { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; }
+        dd, td { overflow-wrap: anywhere; }
+    </style>
+    <script src="{{ url_for('static', path='/execution-list.js') }}" type="module"></script>
+</head>
+<body>
+    <main>
+        <h1>{{ page_title }}</h1>
+        <p><a href="{{ url_for('plans_page') }}">返回计划列表</a> · <a href="/">返回首页</a></p>
+        <p>完成状态是填报人的声称，需要结合巡查等证据核实。</p>
+
+        <section id="execution-plan" hidden>
+            <h2 id="execution-plan-title"></h2>
+            <dl id="execution-plan-fields"></dl>
+            <h3>已保存的计划要求</h3>
+            <pre id="execution-plan-requirements"></pre>
+        </section>
+<section aria-labelledby="execution-intake-title">
+    <h2 id="execution-intake-title">录入本次执行情况</h2>
+    <p>本记录保存执行人声称的情况，尚未经过巡查或人工审核。请只填写合成数据。</p>
+    <p id="execution-context-message" role="status">正在读取本计划的覆盖地点。</p>
+    <button id="execution-reload-context" type="button">重新加载计划与地点</button>
+
+    <form id="execution-form">
+        <fieldset id="execution-form-fields" disabled>
+            <legend>执行人提供的信息</legend>
+            <p><label>执行人
+                <input name="executor_name" required maxlength="120">
+            </label></p>
+            <p><label>完成情况
+                <select name="completion_claim" required>
+                    <option value="unknown">完成情况待核实</option>
+                    <option value="completed">声称已完成</option>
+                    <option value="partially_completed">声称部分完成</option>
+                    <option value="not_completed">声称未完成</option>
+                </select>
+            </label></p>
+            <p><label>执行情况描述
+                <textarea name="description" required maxlength="2000" rows="4"></textarea>
+            </label></p>
+            <p><label>具体点位是否明确
+                <select name="scope_mode">
+                    <option value="unknown">具体点位待核实</option>
+                    <option value="known">明确选择执行点位</option>
+                </select>
+            </label></p>
+            <p><label>本次明确执行的点位（可多选）
+                <select name="location_ids" multiple size="5" disabled></select>
+            </label><br>只能选择当前计划明确覆盖的地点；不选择整个计划代替未知点位。</p>
+            <p><label>声称开始时间（北京时间，可留空）
+                <input name="claimed_started_at" type="datetime-local" step="1">
+            </label></p>
+            <p><label>声称完成时间（北京时间，可留空）
+                <input name="claimed_finished_at" type="datetime-local" step="1">
+            </label><br>只有“声称已完成”才能填写完成时间。留空表示待核实。</p>
+        </fieldset>
+        <button id="execution-send" type="submit" disabled>保存执行记录</button>
+    </form>
+
+    <p id="execution-submit-message" role="status"></p>
+    <p id="execution-submit-reference" hidden>本次提交编号：
+        <code id="execution-request-id"></code>
+    </p>
+    <p id="execution-retry-note" hidden>结果未确认时，请保留当前标签页并原样重试；刷新后也会恢复本次提交。</p>
+    <section id="execution-receipt" hidden aria-labelledby="execution-receipt-title">
+        <h3 id="execution-receipt-title">本次保存回执</h3>
+        <pre id="execution-receipt-content"></pre>
+    </section>
+    <button id="execution-new" type="button" hidden>录入下一条执行记录</button>
+</section>
+        <h2>该计划的执行记录</h2>
+        <button id="refresh-executions" type="button" disabled>刷新查询</button>
+        <p id="execution-message" role="status" aria-live="polite"></p>
+        <div style="overflow-x: auto;">
+            <table>
+                <caption>按录入时间从新到旧排列；点位未知的记录也会保留</caption>
+                <thead>
+                    <tr>
+                        <th>录入时间（北京时间）</th>
+                        <th>完成声称</th>
+                        <th>填报执行人</th>
+                        <th>执行点位（当前台账）</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="execution-rows"></tbody>
+            </table>
+        </div>
+        <nav aria-label="执行记录分页">
+            <button id="execution-previous" type="button" disabled>上一页</button>
+            <span id="execution-page-label"></span>
+            <button id="execution-next" type="button" disabled>下一页</button>
+        </nav>
+
+        <p id="execution-detail-message" role="status" aria-live="polite"></p>
+        <section id="execution-detail" hidden aria-labelledby="execution-detail-title">
+            <h2 id="execution-detail-title" tabindex="-1">执行记录详情</h2>
+            <dl id="execution-detail-fields"></dl>
+            <h3>已保存的执行说明</h3>
+            <pre id="execution-description"></pre>
+        </section>
+        <noscript><p>请启用 JavaScript 后查询执行记录。</p></noscript>
+    </main>
+</body>
+</html>
