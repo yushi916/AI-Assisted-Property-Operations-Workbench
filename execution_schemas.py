@@ -54,3 +54,9 @@ class ExecutionCreate(BaseModel):
             if finish.astimezone(UTC) < start.astimezone(UTC):
                 raise ValueError("声称完成时间不能早于声称开始时间")
         return self
+
+
+class ExecutionRead(ExecutionCreate):
+    id: UUID
+    recorded_at: AwareDatetime
+    version: int = Field(ge=1)
