@@ -9,6 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from routers.locations import router as locations_router
 from routers.plans import router as plans_router
 from routers.executions import router as executions_router
+from routers.inspections import router as inspections_router
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -18,6 +19,7 @@ app.include_router(reports_router)
 app.include_router(locations_router)
 app.include_router(plans_router)
 app.include_router(executions_router)
+app.include_router(inspections_router)
 app.mount(
     "/static",
     StaticFiles(directory=BASE_DIR / "static"),

@@ -24,3 +24,10 @@ class InspectionCreate(BaseModel):
         if value is not None and not value.strip():
             raise ValueError("不能仅包含空白字符")
         return value
+
+class InspectionRead(InspectionCreate):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    recorded_at: AwareDatetime
+    version: int = Field(ge=1)
