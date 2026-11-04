@@ -37,15 +37,17 @@
 浏览器暂存使用当前标签页的 sessionStorage。
 结果未确认时应保留该标签页；关闭标签页或浏览器后的草稿恢复尚未实现。
 
-当前数据库结构版本为 0004_execution_records，使用 Alembic 管理增量迁移。
+当前数据库结构版本为 0005_inspection_records，使用 Alembic 管理增量迁移。
 已有库升级按备份、结构及全字段前后核对流程操作，
 见[数据库迁移说明](docs/database-migrations.md)与[执行接口验收](docs/execution-api-validation.md)。
 
-Windows 本机已通过 162 项 Python 回归和 15 项 JavaScript 表单回归。
+Windows 本机已通过 191 项 Python 回归；JavaScript 表单回归另计 15 项，已有通过记录。
 执行网页的业务验收、断线恢复证据与开发过程，
 见[执行记录开发与验收](docs/execution-records-workflow.md)。
 
-巡查、计划履约核对、报事与计划关联、只读 Agent、
+巡查输入、ORM、增量迁移与实际升级核对已完成，
+见[巡查数据层验收](docs/inspection-data-validation.md)。
+巡查 API 和网页、计划履约核对、报事与计划关联、只读 Agent、
 人工审核及专项准备检查继续分阶段实现。
 
 
@@ -146,11 +148,11 @@ python -m unittest discover -s tests -v
 node --test tests/test_execution_form.cjs
 ```
 
-当前 Python 共 162 项：地点完整流程 117 项，
-加上执行输入 9 项、执行迁移 8 项、执行模型 6 项、
-升级核对 6 项、执行 API 15 项与执行页面 1 项。
-JavaScript 表单交互另计 15 项；不计入 Python 测试数。
-两组本机 Windows 回归均由使用者确认通过。
+当前 Python 共 191 项：原执行网页检查点 162 项，
+加上巡查输入 9 项、巡查迁移 8 项、巡查模型 6 项及巡查升级核对 6 项。
+本机 Windows 全量通过。
+JavaScript 表单交互另计 15 项，已有本机与双平台 CI 通过记录；
+本次巡查数据层没有修改前端脚本。
 
 数据库相关测试使用临时数据库；JavaScript 测试模拟浏览器页面、存储与网络。
 GitHub Actions 配置在 Windows、Ubuntu 运行这两组回归，
@@ -167,11 +169,12 @@ GitHub Actions 配置在 Windows、Ubuntu 运行这两组回归，
 - [地点层级验收](docs/location-hierarchy-data-validation.md)
 - [执行记录接口验收](docs/execution-api-validation.md)
 - [执行记录开发与网页验收](docs/execution-records-workflow.md)
+- [巡查数据层验收](docs/inspection-data-validation.md)
 
 
 ## 后续阶段
 
-1. 在第二阶段继续巡查数据与页面、程序证据核对，以及报事和计划的人工关联。
+1. 在第二阶段继续巡查 API 和页面、程序证据核对，以及报事和计划的人工关联。
 2. 接入只读 Agent，保存建议、证据与失败记录。
 3. 完成人工修正、批准或退回、审计和内部核实待办。
 4. 完成专项准备检查、权限完善、部署与评估展示；表结构变化持续通过迁移管理。

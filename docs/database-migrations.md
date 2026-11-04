@@ -201,3 +201,27 @@ verify_execution_upgrade.py升级前使用--before，升级后使用同一备份
 新增29项，加上此前117项，全量146项已在Linux验证环境通过。
 上述实际升级及前后JSON由Windows本机完成并提供；CI结果按对应提交另行核对。
 执行记录整轮仍需继续接口、页面和业务范围校验。
+
+
+## 0005_inspection_records：巡查观察数据层
+
+日期：2026-11-04。版本从0004_execution_records升级至0005_inspection_records。
+新增inspection_records单表，关联计划和一个可为空的明确地点。
+观察时间与录入时间分别保存；未知地点和观察时间保留为空。
+原有六张业务表的结构和数据保留，已有执行记录可以非空。
+
+本次Windows实际升级已完成停服、备份、升级前核对、升级和升级后核对。
+本次备份为data/backups/property-before-alembic-9cbf0689f6094245bddeebdde2522e2a.db。
+当前版本已确认0005_inspection_records；
+旧六表全字段及结构一致，完整性和外键检查通过，新巡查表为0条。
+具体规则与验证见[巡查数据层验收](inspection-data-validation.md)。
+
+verify_inspection_upgrade.py升级前使用--before，升级后使用同一备份不加该参数。
+工具只读，不覆盖当前库；新表为空的检查仅用于本次纯结构升级。
+后续录入巡查后，不再把新表非空当成升级失败。
+
+新增巡查输入9项、迁移8项、ORM6项和核对工具6项，
+Python全量191项在Windows本机通过，JavaScript表单另计15项。
+本检查点CI结果以对应提交的Actions为准。
+巡查API和页面随后接入，计划范围校验在API实现。
+已有巡查证据时自动降级拒绝删除；数据库和备份继续保留本机。

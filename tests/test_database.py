@@ -52,8 +52,8 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(
             inspect(self.engine).get_table_names(),
             [
-                "execution_locations", "execution_records", "locations",
-                "plan_instances", "plan_locations", "service_requests",
+                "execution_locations", "execution_records", "inspection_records",
+                "locations", "plan_instances", "plan_locations", "service_requests",
             ],
         )
         with self.engine.connect() as first, self.engine.connect() as second:

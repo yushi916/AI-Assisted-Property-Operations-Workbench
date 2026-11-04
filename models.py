@@ -231,3 +231,42 @@ class ExecutionLocation(Base):
         back_populates="locations"
     )
     location: Mapped[Location] = relationship()
+
+
+class InspectionRecord(Base):
+    __tablename__ = "inspection_records"
+    __table_args__ = (
+        CheckConstraint("version >= 1", name="ck_inspection_version"),
+        CheckConstraint(
+            "length(inspector_name) BETWEEN 1 AND 120",
+            name="ck_inspection_inspector",
+        ),
+        CheckConstraint(
+            "length(description) BETWEEN 1 AND 2000",
+            name="ck_inspection_description",
+        ),
+        CheckConstraint(
+            "finding IN ('no_issue_observed', 'issue_observed', 'unable_to_verify')",
+            name="ck_inspection_finding",
+        ),
+        CheckConstraint(
+            "observed_at IS NULL OR observed_at <= recorded_at",
+            name="ck_inspection_observed_recorded",
+        ),
+    )
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    request_id: Mapped[UUID] = mapped_column(Uuid, unique=True)
+    plan_id: Mapped[UUID] = mapped_column(
+        ForeignKey("plan_instances.id"), index=True
+    )
+    inspector_name: Mapped[str] = mapped_column(String(120))
+    description: Mapped[str] = mapped_column(Text)
+    finding: Mapped[str] = mapped_column(String(32))
+    location_id: Mapped[str | None] = mapped_column(ForeignKey("locations.id"))
+    observed_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    recorded_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utc_now)
+    version: Mapped[int] = mapped_column(Integer, default=1)
+
+    plan: Mapped[PlanInstance] = relationship()
+    location: Mapped[Location | None] = relationship()
