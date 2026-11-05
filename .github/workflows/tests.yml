@@ -37,5 +37,5 @@ jobs:
         with:
           node-version: "24"
           package-manager-cache: false
-      - name: Run execution form regression tests
-        run: node --test tests/test_execution_form.cjs
+      - name: Run form regression tests
+        run: node --test tests/test_execution_form.cjs tests/test_inspection_form.cjs

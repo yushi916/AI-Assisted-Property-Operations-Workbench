@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ page_title }}</title>
+    <style>
+        body { max-width: 960px; margin: 32px auto; padding: 0 20px; font-family: sans-serif; line-height: 1.7; }
+        button { margin: 8px; padding: 8px 12px; font: inherit; }
+        table { width: 100%; text-align: left; border-collapse: collapse; }
+        th, td { padding: 8px; border-bottom: 1px solid #ddd; vertical-align: top; }
+        pre { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; }
+        dd, td { overflow-wrap: anywhere; }
+    </style>
+    <script src="{{ url_for('static', path='/inspection-list.js') }}" type="module"></script>
+</head>
+<body>
+    <main>
+        <h1>{{ page_title }}</h1>
+        <p><a href="{{ url_for('plans_page') }}">返回计划列表</a> · <a href="/">返回首页</a></p>
+        <p>巡查记录描述现场观察，不直接判定计划履行或人员责任。请只使用合成数据。</p>
+
+        <section id="inspection-plan" hidden>
+            <h2 id="inspection-plan-title"></h2>
+            <dl id="inspection-plan-fields"></dl>
+            <h3>已保存的计划要求</h3>
+            <pre id="inspection-plan-requirements"></pre>
+        </section>
+        <section aria-labelledby="inspection-intake-title">
+            <h2 id="inspection-intake-title">录入本次巡查观察</h2>
+            <p>一条记录对应一个明确点位；情况不同的点位请分别记录。请只填写合成数据。</p>
+            <p id="inspection-context-message" role="status">正在读取本计划的覆盖地点。</p>
+            <button id="inspection-reload-context" type="button">重新加载计划与地点</button>
+
+            <form id="inspection-form">
+                <fieldset id="inspection-form-fields" disabled>
+                    <legend>巡查人员提供的信息</legend>
+                    <p><label>巡查人
+                        <input name="inspector_name" required maxlength="120">
+                    </label></p>
+                    <p><label>巡查观察
+                        <select name="finding" required>
+                            <option value="unable_to_verify">无法核实</option>
+                            <option value="no_issue_observed">未见异常</option>
+                            <option value="issue_observed">发现异常</option>
+                        </select>
+                    </label></p>
+                    <p><label>巡查描述
+                        <textarea name="description" required maxlength="2000" rows="4"></textarea>
+                    </label></p>
+                    <p><label>具体点位是否明确
+                        <select name="scope_mode">
+                            <option value="unknown">具体点位待核实</option>
+                            <option value="known">明确选择一个巡查点位</option>
+                        </select>
+                    </label></p>
+                    <p><label>本次巡查的明确点位
+                        <select name="location_id" disabled></select>
+                    </label></p>
+                    <p><label>观察时间（北京时间，可留空）
+                        <input name="observed_at" type="datetime-local" step="1">
+                    </label><br>留空表示待核实，不使用录入时间代替。</p>
+                </fieldset>
+                <button id="inspection-send" type="submit" disabled>保存巡查记录</button>
+            </form>
+
+            <p id="inspection-submit-message" role="status"></p>
+            <p id="inspection-submit-reference" hidden>本次提交编号：
+                <code id="inspection-request-id"></code>
+            </p>
+            <p id="inspection-retry-note" hidden>结果未确认时，请保留当前标签页并原样重试；刷新后也会恢复本次提交。</p>
+            <section id="inspection-receipt" hidden aria-labelledby="inspection-receipt-title">
+                <h3 id="inspection-receipt-title">本次保存回执</h3>
+                <pre id="inspection-receipt-content"></pre>
+            </section>
+            <button id="inspection-new" type="button" hidden>录入下一条巡查记录</button>
+        </section>
+        <h2>该计划的巡查记录</h2>
+        <button id="refresh-inspections" type="button" disabled>刷新查询</button>
+        <p id="inspection-message" role="status" aria-live="polite"></p>
+        <div style="overflow-x: auto;">
+            <table>
+                <caption>按录入时间从新到旧排列；点位未知的记录也会保留</caption>
+                <thead>
+                    <tr>
+                        <th>录入时间（北京时间）</th>
+                        <th>观察时间（北京时间）</th>
+                        <th>巡查观察</th>
+                        <th>填报巡查人</th>
+                        <th>巡查点位（当前台账）</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="inspection-rows"></tbody>
+            </table>
+        </div>
+        <nav aria-label="巡查记录分页">
+            <button id="inspection-previous" type="button" disabled>上一页</button>
+            <span id="inspection-page-label"></span>
+            <button id="inspection-next" type="button" disabled>下一页</button>
+        </nav>
+
+        <p id="inspection-detail-message" role="status" aria-live="polite"></p>
+        <section id="inspection-detail" hidden aria-labelledby="inspection-detail-title">
+            <h2 id="inspection-detail-title" tabindex="-1">巡查记录详情</h2>
+            <dl id="inspection-detail-fields"></dl>
+            <h3>已保存的巡查说明</h3>
+            <pre id="inspection-description"></pre>
+        </section>
+        <noscript><p>请启用 JavaScript 后查询巡查记录。</p></noscript>
+    </main>
+</body>
+</html>

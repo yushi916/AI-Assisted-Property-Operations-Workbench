@@ -20,7 +20,7 @@
 
 ## 当前实现
 
-已完成本机报事、计划和执行记录的录入与查询：
+已完成本机报事、计划、执行和巡查记录的录入与查询：
 
 - 报事：网页录入、保存回执、列表分页和详情查询。
 - 计划：录入要求、负责人、时间区间与明确覆盖地点，保存后可查询。
@@ -28,7 +28,7 @@
 - 执行：从某次计划进入，录入执行声称、明确点位和已知时间，按计划查询、分页与查看详情。
 - 提交：先暂存本次编号和内容；结果未确认时刷新恢复，使用原编号和原内容重试。
 - 时间：已知时间按 UTC 保存，网页按北京时间展示；未知声称时间保留为空。
-- 巡查：API 保存、详情和按计划分页查询；未知地点、观察时间保留为空。
+- 巡查：从计划进入网页录入、保存回执、按计划分页与查看详情；未知地点和观察时间保留为空。
 
 执行记录只保存明确声明的点位；未知点位保留为空列表。
 计划覆盖 A、B 两处，不自动表示一条执行记录覆盖两处。
@@ -42,7 +42,7 @@
 已有库升级按备份、结构及全字段前后核对流程操作，
 见[数据库迁移说明](docs/database-migrations.md)与[执行接口验收](docs/execution-api-validation.md)。
 
-Windows 本机已通过 206 项 Python 回归；JavaScript 表单回归另计 15 项，已有通过记录。
+Windows 本机已通过 207 项 Python 回归；JavaScript 表单回归另计 33 项。
 执行网页的业务验收、断线恢复证据与开发过程，
 见[执行记录开发与验收](docs/execution-records-workflow.md)。
 
@@ -50,8 +50,9 @@ Windows 本机已通过 206 项 Python 回归；JavaScript 表单回归另计 15
 见[巡查数据层验收](docs/inspection-data-validation.md)。
 巡查保存、详情与按计划列表接口已完成本机验收，
 见[巡查接口验收](docs/inspection-api-validation.md)。
-巡查网页、计划履约核对、报事与计划关联、只读 Agent、
-人工审核及专项准备检查继续分阶段实现。
+巡查网页录入、查询与故障恢复已完成本机验收，
+见[巡查记录开发与网页验收](docs/inspection-records-workflow.md)。
+计划履约核对、报事与计划关联、只读 Agent、人工审核及专项准备检查继续分阶段实现。
 
 
 ## 报事接口
@@ -148,14 +149,13 @@ JavaScript 表单回归使用 Node.js 24：
 
 ```bat
 python -m unittest discover -s tests -v
-node --test tests/test_execution_form.cjs
+node --test tests/test_execution_form.cjs tests/test_inspection_form.cjs
 ```
 
-当前 Python 共 206 项：原执行网页检查点 162 项，
-加上巡查输入 9 项、巡查迁移 8 项、巡查模型 6 项、巡查升级核对 6 项及巡查 API 15 项。
-本机 Windows 全量通过。
-JavaScript 表单交互另计 15 项，已有本机与双平台 CI 通过记录；
-本次巡查数据层没有修改前端脚本。
+当前 Python 共 207 项：原执行网页检查点 162 项，
+加上巡查输入 9 项、巡查迁移 8 项、巡查模型 6 项、巡查升级核对 6 项、巡查 API 15 项及巡查页面接线 1 项。
+JavaScript 表单交互共 33 项：执行 15 项、巡查 18 项。
+两组回归均有 Windows 本机通过确认；本网页检查点的双平台 CI 在推送后按对应提交核对。
 
 数据库相关测试使用临时数据库；JavaScript 测试模拟浏览器页面、存储与网络。
 GitHub Actions 配置在 Windows、Ubuntu 运行这两组回归，
@@ -163,7 +163,7 @@ GitHub Actions 配置在 Windows、Ubuntu 运行这两组回归，
 这些自动检查不等于真实浏览器端到端测试。
 
 实际浏览器验收与自动测试分别记录。
-执行记录断线恢复后，已用只读查询核实原提交编号对应原保存回执，且记录数为 1。
+执行与巡查记录断线恢复后，均已用只读查询核实原提交编号对应保存回执，且各自记录数为 1。
 当前验证未调用真实模型，不代表 AI 研判效果评估。
 
 - [第一阶段验收](docs/stage-1-validation.md)
@@ -173,11 +173,13 @@ GitHub Actions 配置在 Windows、Ubuntu 运行这两组回归，
 - [执行记录接口验收](docs/execution-api-validation.md)
 - [执行记录开发与网页验收](docs/execution-records-workflow.md)
 - [巡查数据层验收](docs/inspection-data-validation.md)
+- [巡查接口验收](docs/inspection-api-validation.md)
+- [巡查记录开发与网页验收](docs/inspection-records-workflow.md)
 
 
 ## 后续阶段
 
-1. 在第二阶段继续巡查页面、程序证据核对，以及报事和计划的人工关联。
+1. 在第二阶段继续程序证据核对，以及报事和计划的人工关联。
 2. 接入只读 Agent，保存建议、证据与失败记录。
 3. 完成人工修正、批准或退回、审计和内部核实待办。
 4. 完成专项准备检查、权限完善、部署与评估展示；表结构变化持续通过迁移管理。

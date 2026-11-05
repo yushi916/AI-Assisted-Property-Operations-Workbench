@@ -80,3 +80,16 @@ def executions_page(request: Request):
         name="executions.html",
         context={"page_title": "计划执行记录"},
     )
+
+@app.get(
+    "/inspections",
+    response_class=HTMLResponse,
+    include_in_schema=False,
+    name="inspections_page",
+)
+def inspections_page(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="inspections.html",
+        context={"page_title": "计划巡查记录"},
+    )

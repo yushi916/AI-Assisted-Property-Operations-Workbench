@@ -89,7 +89,7 @@ async function openPlan(id) {
         }
         document.querySelector("#plan-detail-requirements").textContent = plan.requirements;
         detail.hidden = false;
-        detailMessage.textContent = "已读取保存的计划，可从列表查看执行记录。";
+        detailMessage.textContent = "已读取保存的计划，可从列表查看执行和巡查记录。";
         document.querySelector("#plan-detail-title").focus();
     } catch (error) {
         if (sequence !== detailSequence) return;
@@ -129,7 +129,11 @@ async function loadPlans(targetOffset) {
             executionLink.href = "/executions?plan_id=" + encodeURIComponent(plan.id);
             executionLink.textContent = "查看执行记录";
             executionLink.style.marginLeft = "8px";
-            action.append(button, executionLink);
+            const inspectionLink = document.createElement("a");
+            inspectionLink.href = "/inspections?plan_id=" + encodeURIComponent(plan.id);
+            inspectionLink.textContent = "查看巡查记录";
+            inspectionLink.style.marginLeft = "8px";
+            action.append(button, executionLink, inspectionLink);
             row.append(action);
             rows.append(row);
         }
