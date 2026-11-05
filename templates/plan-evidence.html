@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ page_title }}</title>
+    <style>
+        body { max-width: 960px; margin: 32px auto; padding: 0 20px; font-family: sans-serif; line-height: 1.7; }
+        button { padding: 8px 12px; font: inherit; }
+        code, dd, td, li { overflow-wrap: anywhere; }
+        table { width: 100%; text-align: left; border-collapse: collapse; }
+        th, td { padding: 8px; border-bottom: 1px solid #ddd; vertical-align: top; }
+    </style>
+    <script src="{{ url_for('static', path='/plan-evidence.js') }}" defer></script>
+</head>
+<body>
+    <main id="plan-evidence" data-plan-id="{{ plan_id }}">
+        <h1>{{ page_title }}</h1>
+        <p><a href="{{ url_for('plans_page') }}">返回计划列表</a></p>
+        <p>所选计划编号：<code>{{ plan_id }}</code></p>
+        <p>
+            <a href="{{ url_for('executions_page') }}?plan_id={{ plan_id }}">查看该计划执行记录</a> ·
+            <a href="{{ url_for('inspections_page') }}?plan_id={{ plan_id }}">查看该计划巡查记录</a>
+        </p>
+        <p>本页核对明确点位、缺失信息与时间先后。完成声称与巡查观察仍需人员复核。</p>
+        <button id="refresh-evidence" type="button" disabled>刷新证据核对</button>
+        <p id="evidence-message" role="status" aria-live="polite">尚未查询。</p>
+
+        <section id="evidence-result" hidden aria-labelledby="evidence-result-title">
+            <h2 id="evidence-result-title">本次核对结果</h2>
+            <dl id="evidence-summary"></dl>
+            <h3>各地点的明确记录</h3>
+            <p>有记录不等于已验收合格；点位未知的记录另行保留。</p>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead><tr><th>地点（当前台账）</th><th>执行记录</th><th>巡查记录</th></tr></thead>
+                    <tbody id="evidence-coverage"></tbody>
+                </table>
+            </div>
+            <h3>待核实项</h3>
+            <ul id="evidence-findings"></ul>
+            <h3>巡查观察与声称完成时间的比较</h3>
+            <p>按同一点位的记录逐组比较；完成后发现异常仍需考虑再次产生等可能。</p>
+            <ul id="evidence-comparisons"></ul>
+            <details>
+                <summary>本次纳入的证据引用（含点位未知的记录）</summary>
+                <ul id="evidence-references"></ul>
+            </details>
+        </section>
+        <noscript><p>请启用 JavaScript 后查询证据核对结果。</p></noscript>
+    </main>
+</body>
+</html>

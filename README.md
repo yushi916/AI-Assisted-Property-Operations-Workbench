@@ -20,39 +20,32 @@
 
 ## 当前实现
 
-已完成本机报事、计划、执行和巡查记录的录入与查询：
+已完成本机报事、计划、执行和巡查记录的录入与查询，并支持计划证据核对：
 
 - 报事：网页录入、保存回执、列表分页和详情查询。
 - 计划：录入要求、负责人、时间区间与明确覆盖地点，保存后可查询。
 - 地点：分区、楼栋、单元、房间及公共点位的层级与完整地址。
-- 执行：从某次计划进入，录入执行声称、明确点位和已知时间，按计划查询、分页与查看详情。
-- 提交：先暂存本次编号和内容；结果未确认时刷新恢复，使用原编号和原内容重试。
-- 时间：已知时间按 UTC 保存，网页按北京时间展示；未知声称时间保留为空。
-- 巡查：从计划进入网页录入、保存回执、按计划分页与查看详情；未知地点和观察时间保留为空。
+- 执行：按计划保存执行声称、明确点位和已知时间，支持录入、列表与详情。
+- 巡查：按计划保存独立观察，未知地点和观察时间保留为空。
+- 提交：先暂存编号和内容；结果未确认时刷新恢复，使用原编号和原内容重试。
+- 时间：已知时间按 UTC 保存，网页按北京时间展示；未知时间不使用录入时间代替。
+- 证据核对：读取所选计划的全部执行和巡查，按明确点位提示缺项、未知信息与时间关系。
+- 核对网页：从计划列表进入，展示覆盖情况、待核实项、时间比较和全部证据引用，支持查询失败后重试。
 
 执行记录只保存明确声明的点位；未知点位保留为空列表。
 计划覆盖 A、B 两处，不自动表示一条执行记录覆盖两处。
-完成状态是填报人的声称，仍需独立巡查等证据核实。
-风险字段同样记录人员声明，不代表已经完成安全判断。
+完成声称、巡查观察和风险声明仍需人员复核；程序提示不直接认定履约合格或虚报。
 
 浏览器暂存使用当前标签页的 sessionStorage。
 结果未确认时应保留该标签页；关闭标签页或浏览器后的草稿恢复尚未实现。
 
 当前数据库结构版本为 0005_inspection_records，使用 Alembic 管理增量迁移。
-已有库升级按备份、结构及全字段前后核对流程操作，
-见[数据库迁移说明](docs/database-migrations.md)与[执行接口验收](docs/execution-api-validation.md)。
+已有库升级按备份、结构及全字段前后核对流程操作，见[数据库迁移说明](docs/database-migrations.md)。
+本轮证据核对不改数据库结构、不写业务记录，也不调用模型。
 
-Windows 本机已通过 207 项 Python 回归；JavaScript 表单回归另计 33 项。
-执行网页的业务验收、断线恢复证据与开发过程，
-见[执行记录开发与验收](docs/execution-records-workflow.md)。
-
-巡查输入、ORM、增量迁移与实际升级核对已完成，
-见[巡查数据层验收](docs/inspection-data-validation.md)。
-巡查保存、详情与按计划列表接口已完成本机验收，
-见[巡查接口验收](docs/inspection-api-validation.md)。
-巡查网页录入、查询与故障恢复已完成本机验收，
-见[巡查记录开发与网页验收](docs/inspection-records-workflow.md)。
-计划履约核对、报事与计划关联、只读 Agent、人工审核及专项准备检查继续分阶段实现。
+Windows 本机已确认 Python 231 项和 JavaScript 45 项通过。
+规则、接口、网页及业务案例的验证记录见[计划证据核对验收](docs/plan-evidence-validation.md)。
+报事与计划关联、只读 Agent、人工审核及专项准备检查继续分阶段实现。
 
 
 ## 报事接口
@@ -145,26 +138,24 @@ python -m uvicorn main:app --host 127.0.0.1 --port 8000
 ## 验证
 
 在项目根目录、已激活的 property-v2 环境运行 Python 回归。
-JavaScript 表单回归使用 Node.js 24：
+JavaScript 交互回归使用 Node.js 24：
 
 ```bat
 python -m unittest discover -s tests -v
-node --test tests/test_execution_form.cjs tests/test_inspection_form.cjs
+node --test tests/test_execution_form.cjs tests/test_inspection_form.cjs tests/test_plan_evidence_view.cjs
 ```
 
-当前 Python 共 207 项：原执行网页检查点 162 项，
-加上巡查输入 9 项、巡查迁移 8 项、巡查模型 6 项、巡查升级核对 6 项、巡查 API 15 项及巡查页面接线 1 项。
-JavaScript 表单交互共 33 项：执行 15 项、巡查 18 项。
-两组回归均有 Windows 本机通过确认；本网页检查点的双平台 CI 在推送后按对应提交核对。
+当前 Python 共 231 项：巡查网页检查点 207 项，加规则 12 项、核对 API 8 项和核对页面 4 项。
+JavaScript 共 45 项：执行 15 项、巡查 18 项、核对页面 12 项。
+Windows 本机与隔离副本均已通过；新里程碑的远程 CI 在推送后按对应提交核对。
 
-数据库相关测试使用临时数据库；JavaScript 测试模拟浏览器页面、存储与网络。
-GitHub Actions 配置在 Windows、Ubuntu 运行这两组回归，
-每次提交的实际 CI 结果以对应 Actions 记录为准。
-这些自动检查不等于真实浏览器端到端测试。
+数据库相关测试使用临时数据库；JavaScript 测试模拟页面、存储与网络。
+GitHub Actions 配置在 Windows、Ubuntu 运行这两组回归。
+自动测试不等于真实浏览器端到端验证，也不证明 AI 研判质量。
 
 实际浏览器验收与自动测试分别记录。
 执行与巡查记录断线恢复后，均已用只读查询核实原提交编号对应保存回执，且各自记录数为 1。
-当前验证未调用真实模型，不代表 AI 研判效果评估。
+证据核对页已完成正常显示、停服刷新失败和恢复服务后重新查询的本机验收。
 
 - [第一阶段验收](docs/stage-1-validation.md)
 - [数据库迁移](docs/database-migrations.md)
@@ -175,11 +166,12 @@ GitHub Actions 配置在 Windows、Ubuntu 运行这两组回归，
 - [巡查数据层验收](docs/inspection-data-validation.md)
 - [巡查接口验收](docs/inspection-api-validation.md)
 - [巡查记录开发与网页验收](docs/inspection-records-workflow.md)
+- [计划证据核对验收](docs/plan-evidence-validation.md)
 
 
 ## 后续阶段
 
-1. 在第二阶段继续程序证据核对，以及报事和计划的人工关联。
+1. 在第二阶段继续报事和计划的人工关联，以及联合证据视图。
 2. 接入只读 Agent，保存建议、证据与失败记录。
 3. 完成人工修正、批准或退回、审计和内部核实待办。
 4. 完成专项准备检查、权限完善、部署与评估展示；表结构变化持续通过迁移管理。

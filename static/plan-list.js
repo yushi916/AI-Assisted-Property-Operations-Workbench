@@ -133,7 +133,11 @@ async function loadPlans(targetOffset) {
             inspectionLink.href = "/inspections?plan_id=" + encodeURIComponent(plan.id);
             inspectionLink.textContent = "查看巡查记录";
             inspectionLink.style.marginLeft = "8px";
-            action.append(button, executionLink, inspectionLink);
+            const evidenceLink = document.createElement("a");
+            evidenceLink.href = "/plan-evidence?plan_id=" + encodeURIComponent(plan.id);
+            evidenceLink.textContent = "证据核对";
+            evidenceLink.style.marginLeft = "8px";
+            action.append(button, executionLink, inspectionLink, evidenceLink);
             row.append(action);
             rows.append(row);
         }

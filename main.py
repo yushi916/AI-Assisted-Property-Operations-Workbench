@@ -1,4 +1,5 @@
 from pathlib import Path
+from uuid import UUID
 
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
@@ -10,6 +11,7 @@ from routers.locations import router as locations_router
 from routers.plans import router as plans_router
 from routers.executions import router as executions_router
 from routers.inspections import router as inspections_router
+from routers.plan_evidence import router as plan_evidence_router
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -20,6 +22,8 @@ app.include_router(locations_router)
 app.include_router(plans_router)
 app.include_router(executions_router)
 app.include_router(inspections_router)
+app.include_router(plan_evidence_router)
+
 app.mount(
     "/static",
     StaticFiles(directory=BASE_DIR / "static"),
@@ -92,4 +96,17 @@ def inspections_page(request: Request):
         request=request,
         name="inspections.html",
         context={"page_title": "计划巡查记录"},
+    )
+
+@app.get(
+    "/plan-evidence",
+    response_class=HTMLResponse,
+    include_in_schema=False,
+    name="plan_evidence_page",
+)
+def plan_evidence_page(request: Request, plan_id: UUID):
+    return templates.TemplateResponse(
+        request=request,
+        name="plan-evidence.html",
+        context={"page_title": "计划证据核对", "plan_id": str(plan_id)},
     )
