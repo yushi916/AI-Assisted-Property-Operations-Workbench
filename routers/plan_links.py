@@ -1,14 +1,14 @@
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
-from sqlalchemy import select
+from sqlalchemy import exists, select, update
 from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm import Session
 
 from database import get_db
 from models import PlanInstance, PlanLocation, RequestPlanLink, ServiceRequest, utc_now
-from plan_link_schemas import RequestPlanLinkCreate, RequestPlanLinkRead
+from plan_link_schemas import RequestPlanLinkCreate, RequestPlanLinkRead, RequestPlanLinkRevoke
 
 
 router = APIRouter(prefix="/api/service-requests/{report_id}/plan-links", tags=["plan-links"])
@@ -90,5 +90,61 @@ def list_plan_links(
             result = [RequestPlanLinkRead.model_validate(item) for item in records]
     except OperationalError as error:
         raise HTTPException(status_code=503, detail="关联查询未完成，请稍后重试。") from error
+    response.headers["Cache-Control"] = "no-store"
+    return result
+
+
+
+@router.post(
+    "/{link_id}/revoke", response_model=RequestPlanLinkRead,
+    responses={
+        404: {"description": "该报事下不存在此关联"},
+        409: {"description": "版本、关联状态或撤销提交内容冲突"},
+        422: {"description": "撤销输入不合法"},
+        503: {"description": "数据库繁忙或服务器时间异常，本次未完成撤销"},
+    },
+)
+def revoke_plan_link(
+    report_id: UUID, link_id: UUID, data: RequestPlanLinkRevoke,
+    response: Response, db: Session = Depends(get_db),
+):
+    try:
+        with db.begin():
+            changed_id = db.scalar(update(RequestPlanLink).where(
+                RequestPlanLink.id == link_id,
+                RequestPlanLink.report_id == report_id,
+                RequestPlanLink.status == "active",
+                RequestPlanLink.version == data.expected_version,
+                ~exists(select(RequestPlanLink.id).where(
+                    RequestPlanLink.revocation_request_id == data.request_id
+                )),
+            ).values(
+                status="revoked", version=RequestPlanLink.version + 1,
+                revocation_request_id=data.request_id, revoked_at=utc_now(),
+                revoked_by=data.revoked_by, revoke_reason=data.reason,
+            ).returning(RequestPlanLink.id).execution_options(synchronize_session=False))
+            link = db.scalar(select(RequestPlanLink).where(
+                RequestPlanLink.id == link_id, RequestPlanLink.report_id == report_id,
+            ))
+            if link is None:
+                raise HTTPException(status_code=404, detail="该报事下不存在此关联")
+            same_retry = (
+                link.status == "revoked"
+                and link.revocation_request_id == data.request_id
+                and link.version == data.expected_version + 1
+                and link.revoked_by == data.revoked_by
+                and link.revoke_reason == data.reason
+            )
+            if changed_id is None and not same_retry:
+                raise HTTPException(status_code=409, detail="关联版本、状态或撤销提交内容冲突，请先查询当前记录。")
+            result = RequestPlanLinkRead.model_validate(link)
+    except IntegrityError as error:
+        if "ck_link_time_order" in str(error.orig):
+            raise HTTPException(status_code=503, detail="服务器时间早于关联时间，本次未撤销，请核对后重试。") from error
+        raise
+    except OperationalError as error:
+        if error.orig.sqlite_errorname.startswith(("SQLITE_BUSY", "SQLITE_LOCKED")):
+            raise HTTPException(status_code=503, detail="数据库暂时繁忙，请原样重试本次撤销。") from error
+        raise
     response.headers["Cache-Control"] = "no-store"
     return result

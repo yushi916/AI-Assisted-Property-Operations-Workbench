@@ -198,6 +198,162 @@ class PlanLinksAPITests(unittest.TestCase):
         self.assertEqual(self.rows(), self.original)
         self.assertEqual(self.client.post(self.url(), json=data).status_code, 201)
 
+    def revoke_url(self, link, report=None):
+        return self.url(report) + "/" + link["id"] + "/revoke"
+
+    def revoke_payload(self, **changes):
+        data = dict(request_id=str(uuid4()), expected_version=1,
+                    revoked_by=" 合成撤销人 ", reason=" 合成：选错计划，撤销后重新核对 ")
+        return {**data, **changes}
+
+    def new_link(self, report=None):
+        response = self.client.post(self.url(report), json=self.payload())
+        self.assertEqual(response.status_code, 201, response.text)
+        return response.json()
+
+    def test_revoke_input_validation_and_route_registration(self):
+        link = self.new_link()
+        before = self.rows()
+        for changes in ({"reason": "　"}, {"revoked_by": " "}, {"expected_version": 0},
+                {"expected_version": True}, {"expected_version": "1"}, {"request_id": "bad"},
+                {"status": "revoked"}, {"revoked_at": "2030-01-01T00:00:00Z"},
+                {"reason": "x" * 2001}, {"revoked_by": "x" * 121}):
+            with self.subTest(changes=changes):
+                result = self.client.post(self.revoke_url(link), json=self.revoke_payload(**changes))
+                self.assertEqual(result.status_code, 422, result.text)
+                self.assertEqual(self.rows(), before)
+        from main import app
+        with TestClient(app) as client:
+            paths = client.get("/openapi.json").json()["paths"]
+        self.assertIn("post", paths["/api/service-requests/{report_id}/plan-links/{link_id}/revoke"])
+
+    def test_revoke_preserves_creation_and_original_retry_receipt(self):
+        link = self.new_link()
+        data = self.revoke_payload()
+        result = self.client.post(self.revoke_url(link), json=data)
+        self.assertEqual(result.status_code, 200, result.text)
+        saved = result.json()
+        for field in ("id", "request_id", "report_id", "plan_id", "linked_by", "reason", "linked_at"):
+            self.assertEqual(saved[field], link[field])
+        self.assertEqual((saved["status"], saved["version"]), ("revoked", 2))
+        self.assertEqual(saved["revocation_request_id"], data["request_id"])
+        self.assertEqual(saved["revoked_by"], data["revoked_by"])
+        self.assertEqual(saved["revoke_reason"], data["reason"])
+        before = self.rows()
+        with patch("routers.plan_links.utc_now", return_value=datetime(2000, 1, 1, tzinfo=UTC)):
+            retry = self.client.post(self.revoke_url(link), json=data)
+        self.assertEqual(retry.status_code, 200, retry.text)
+        self.assertEqual(retry.json(), saved)
+        self.engine.dispose()
+        self.assertEqual(self.client.get(self.url()).json(), [saved])
+        self.assertEqual(self.rows(), before)
+        self.assertEqual({name: before[name] for name in OLD}, {name: self.original[name] for name in OLD})
+
+    def test_revoke_stale_versions_conflicts_and_missing_links_do_not_write(self):
+        link = self.new_link()
+        data = self.revoke_payload()
+        before = self.rows()
+        stale = self.client.post(self.revoke_url(link), json={**data, "expected_version": 2})
+        self.assertEqual(stale.status_code, 409, stale.text)
+        self.assertEqual(self.rows(), before)
+        self.assertEqual(self.client.post(self.revoke_url(link), json=data).status_code, 200)
+        before = self.rows()
+        for changes in ({"reason": "另一个理由"}, {"revoked_by": "另一人"},
+                        {"expected_version": 2}, {"request_id": str(uuid4())}):
+            with self.subTest(changes=changes):
+                result = self.client.post(self.revoke_url(link), json={**data, **changes})
+                self.assertEqual(result.status_code, 409, result.text)
+                self.assertEqual(self.rows(), before)
+        for url in (self.revoke_url(link, self.reports[1]),
+                    self.url() + "/" + str(uuid4()) + "/revoke"):
+            self.assertEqual(self.client.post(url, json=data).status_code, 404)
+            self.assertEqual(self.rows(), before)
+
+    def test_revoke_request_cannot_be_reused_on_another_link(self):
+        first = self.new_link()
+        second = self.new_link(self.reports[1])
+        data = self.revoke_payload()
+        self.assertEqual(self.client.post(self.revoke_url(first), json=data).status_code, 200)
+        before = self.rows()
+        result = self.client.post(self.revoke_url(second, self.reports[1]), json=data)
+        self.assertEqual(result.status_code, 409, result.text)
+        self.assertEqual(self.rows(), before)
+        self.assertEqual(self.client.get(self.url(self.reports[1])).json()[0]["status"], "active")
+
+    def test_revoke_then_relink_retains_history_and_old_retries_do_not_change_new_link(self):
+        create_data = self.payload()
+        old = self.client.post(self.url(), json=create_data).json()
+        data = self.revoke_payload()
+        revoked = self.client.post(self.revoke_url(old), json=data).json()
+        new = self.new_link()
+        before = self.rows()
+        retry = self.client.post(self.url(), json=create_data)
+        self.assertEqual(retry.status_code, 200)
+        self.assertEqual(retry.json(), revoked)
+        self.assertEqual(self.client.post(self.revoke_url(old), json=data).json(), revoked)
+        records = {item["id"]: item for item in self.client.get(self.url()).json()}
+        self.assertEqual(records, {old["id"]: revoked, new["id"]: new})
+        self.assertEqual(self.rows(), before)
+
+    def test_revoke_response_failure_rolls_back_transition(self):
+        link = self.new_link()
+        data = self.revoke_payload()
+        before = self.rows()
+        with patch("routers.plan_links.RequestPlanLinkRead.model_validate", side_effect=RuntimeError("合成撤销回执失败")):
+            with self.assertRaisesRegex(RuntimeError, "合成撤销回执失败"):
+                self.client.post(self.revoke_url(link), json=data)
+        self.assertEqual(self.rows(), before)
+        self.assertEqual(self.client.post(self.revoke_url(link), json=data).status_code, 200)
+
+    def test_simultaneous_revokes_change_version_only_once(self):
+        for same, report in ((True, self.reports[0]), (False, self.reports[1])):
+            link = self.new_link(report)
+            barrier = Barrier(2)
+            first = self.revoke_payload()
+            second = first if same else self.revoke_payload(reason="另一合成撤销理由")
+
+            def send(data):
+                with TestClient(self.app) as client:
+                    barrier.wait(timeout=5)
+                    result = client.post(self.revoke_url(link, report), json=data)
+                    return result.status_code, result.json()
+
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                futures = [pool.submit(send, item) for item in (first, second)]
+                results = [future.result(timeout=10) for future in futures]
+            self.assertEqual(sorted(code for code, _ in results), [200, 200] if same else [200, 409])
+            if same:
+                self.assertEqual(results[0][1], results[1][1])
+            stored = self.client.get(self.url(report)).json()[0]
+            self.assertEqual((stored["status"], stored["version"]), ("revoked", 2))
+            self.assertIn(stored["revoke_reason"], (first["reason"], second["reason"]))
+
+    def test_revoke_busy_and_clock_errors_leave_active_record_for_retry(self):
+        link = self.new_link()
+        data = self.revoke_payload()
+        before = self.rows()
+
+        @event.listens_for(self.engine, "connect")
+        def shorten_timeout(connection, record):
+            connection.execute("PRAGMA busy_timeout=50").close()
+
+        self.engine.dispose()
+        with self.engine.connect() as locker:
+            transaction = locker.begin()
+            try:
+                locker.exec_driver_sql("UPDATE service_requests SET version=version")
+                result = self.client.post(self.revoke_url(link), json=data)
+                self.assertEqual(result.status_code, 503, result.text)
+            finally:
+                transaction.rollback()
+        self.assertEqual(self.rows(), before)
+        earlier = datetime.fromisoformat(link["linked_at"].replace("Z", "+00:00")) - timedelta(seconds=1)
+        with patch("routers.plan_links.utc_now", return_value=earlier):
+            result = self.client.post(self.revoke_url(link), json=data)
+        self.assertEqual(result.status_code, 503, result.text)
+        self.assertEqual(self.rows(), before)
+        self.assertEqual(self.client.post(self.revoke_url(link), json=data).status_code, 200)
+
 
 if __name__ == "__main__":
     unittest.main()

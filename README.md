@@ -44,10 +44,10 @@
 已有库升级按备份、结构及全字段前后核对流程操作，见[数据库迁移说明](docs/database-migrations.md)。
 计划证据核对接口只读；人工关联接口写入独立关联表，保存关联不会改写原报事、计划、执行或巡查记录。
 
-Windows 本机已确认 Python 257 项通过；JavaScript 45 项沿用此前已通过的检查。
+Windows 本机已确认 Python 265 项通过；JavaScript 45 项沿用此前已通过的检查。
 规则、接口、网页及业务案例的验证记录见[计划证据核对验收](docs/plan-evidence-validation.md)。
 关联接口的规则和验收记录见[报事与计划人工关联](docs/report-plan-links-validation.md)。
-关联撤销接口与联合证据页面随后接入；只读 Agent、人工审核及专项准备检查继续分阶段实现。
+关联撤销接口已接入并保留历史；下一步接联合证据查询及关联操作页面。只读 Agent、人工审核及专项准备检查继续分阶段实现。
 
 
 ## 报事接口
@@ -147,7 +147,7 @@ python -m unittest discover -s tests -v
 node --test tests/test_execution_form.cjs tests/test_inspection_form.cjs tests/test_plan_evidence_view.cjs
 ```
 
-当前 Python 共 257 项：此前 239 项，加关联数据层 6 项、升级核对工具 4 项和关联 API 8 项。
+当前 Python 共 265 项：此前 257 项，加撤销关联回归 8 项。
 JavaScript 共 45 项：执行 15 项、巡查 18 项、核对页面 12 项。
 Windows 本机与隔离副本均已通过；新里程碑的远程 CI 在推送后按对应提交核对。
 
@@ -173,7 +173,7 @@ GitHub Actions 配置在 Windows、Ubuntu 运行这两组回归。
 
 ## 后续阶段
 
-1. 在第二阶段接入人工关联撤销和联合证据视图，完成报事与计划的核查联系。
+1. 在第二阶段接入联合证据查询和关联操作页面，完成报事与计划的核查联系。
 2. 接入只读 Agent，保存建议、证据与失败记录。
 3. 完成人工修正、批准或退回、审计和内部核实待办。
 4. 完成专项准备检查、权限完善、部署与评估展示；表结构变化持续通过迁移管理。
