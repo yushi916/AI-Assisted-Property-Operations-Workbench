@@ -11,8 +11,8 @@ from plan_schemas import PlanRead
 
 
 MESSAGES = {
-    "missing_execution": "截至核对时刻，未查到该点位的明确执行记录；需要补查。",
-    "missing_inspection": "截至核对时刻，未查到该点位的明确巡查记录；需要补查。",
+    "missing_execution": "截至核对时刻，未查到该点位的明确执行记录；是否需要补查，请对照本计划要求确认。",
+    "missing_inspection": "截至核对时刻，未查到该点位的明确巡查记录；是否需要补查，请对照本计划要求确认。",
     "completion_not_claimed": "执行反馈未声称全部完成，需结合其他记录核对。",
     "unknown_execution_scope": "执行记录的具体点位待核实，不能当作覆盖全部计划。",
     "unknown_completion_time": "执行人声称完成，但声称完成时间待核实。",

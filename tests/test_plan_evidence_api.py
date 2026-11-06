@@ -22,7 +22,8 @@ from models import (
 )
 from routers.plan_evidence import router
 from seed_demo_location_hierarchy import seed_demo_location_hierarchy
-
+from evidence_reader import read_plan_evidence
+from evidence_rules import check_plan_evidence
 
 ROOT = Path(__file__).resolve().parents[1]
 TABLES = (
@@ -231,6 +232,40 @@ class PlanEvidenceAPITests(unittest.TestCase):
         newer = self.client.get(self.url).json()
         self.assertEqual(newer["plan_version"], 2)
         self.assertEqual({x["id"] for x in newer["evidence"] if x["kind"] == "inspection"}, set(inserted))
+
+    def test_shared_reader_returns_data_usable_after_session_closes(self):
+        known_e, known_i = self.add_evidence()
+        unknown_e, unknown_i = self.add_evidence(unknown=True)
+        self.add_evidence(plan_id=self.add_plan())
+        before = self.rows()
+        with self.sessions() as db, db.begin():
+            evidence = read_plan_evidence(db, self.plan_id)
+        result = check_plan_evidence(
+            evidence.plan, evidence.executions, evidence.inspections, at("20:00"),
+        )
+        self.assertEqual({str(item.id) for item in result.evidence}, {
+            str(self.plan_id), *known_e, *known_i, *unknown_e, *unknown_i,
+        })
+        self.assertEqual([str(item) for item in result.coverage[0].execution_ids], known_e)
+        self.assertEqual(result.coverage[1].execution_ids, [])
+        self.assertEqual(self.rows(), before)
+
+    def test_shared_reader_requires_transaction_and_does_not_commit_callers_work(self):
+        with self.sessions() as db:
+            with self.assertRaisesRegex(ValueError, "调用方事务"):
+                read_plan_evidence(db, self.plan_id)
+        before = self.rows()
+        with self.assertRaisesRegex(RuntimeError, "caller rollback"):
+            with self.sessions() as db, db.begin():
+                db.add(ServiceRequest(
+                    request_id=uuid4(), service_category="cleaning",
+                    description="合成：调用方尚未提交的记录", source="web", risk_status="unknown",
+                ))
+                db.flush()
+                self.assertIsNotNone(read_plan_evidence(db, self.plan_id))
+                self.assertTrue(db.in_transaction())
+                raise RuntimeError("caller rollback")
+        self.assertEqual(self.rows(), before)
 
     def test_missing_invalid_ids_and_main_route_registration(self):
         before = self.rows()

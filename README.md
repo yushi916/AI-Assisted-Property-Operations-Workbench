@@ -43,7 +43,7 @@
 已有库升级按备份、结构及全字段前后核对流程操作，见[数据库迁移说明](docs/database-migrations.md)。
 本轮证据核对不改数据库结构、不写业务记录，也不调用模型。
 
-Windows 本机已确认 Python 231 项和 JavaScript 45 项通过。
+Windows 本机已确认 Python 239 项通过；JavaScript 45 项沿用此前已通过的检查。
 规则、接口、网页及业务案例的验证记录见[计划证据核对验收](docs/plan-evidence-validation.md)。
 报事与计划关联、只读 Agent、人工审核及专项准备检查继续分阶段实现。
 
@@ -145,7 +145,7 @@ python -m unittest discover -s tests -v
 node --test tests/test_execution_form.cjs tests/test_inspection_form.cjs tests/test_plan_evidence_view.cjs
 ```
 
-当前 Python 共 231 项：巡查网页检查点 207 项，加规则 12 项、核对 API 8 项和核对页面 4 项。
+当前 Python 共 239 项：巡查网页检查点 207 项，加规则 12 项、核对 API 10 项、核对页面 4 项和关联输入 6 项。
 JavaScript 共 45 项：执行 15 项、巡查 18 项、核对页面 12 项。
 Windows 本机与隔离副本均已通过；新里程碑的远程 CI 在推送后按对应提交核对。
 
