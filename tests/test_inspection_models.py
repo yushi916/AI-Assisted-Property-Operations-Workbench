@@ -100,7 +100,9 @@ class InspectionModelTests(unittest.TestCase):
     def test_latest_inspection_revision_matches_all_seven_models(self):
         reference = create_db_engine(Path(self.folder.name) / "reference.db")
         try:
-            Base.metadata.create_all(reference)
+            Base.metadata.create_all(
+                reference, tables=[Base.metadata.tables[name] for name in ALL]
+            )
             with self.engine.connect() as actual, reference.connect() as expected:
                 self.assertEqual(
                     MigrationContext.configure(actual).get_current_heads(),

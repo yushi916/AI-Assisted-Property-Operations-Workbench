@@ -12,6 +12,7 @@ from routers.plans import router as plans_router
 from routers.executions import router as executions_router
 from routers.inspections import router as inspections_router
 from routers.plan_evidence import router as plan_evidence_router
+from routers.plan_links import router as plan_links_router
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -23,6 +24,7 @@ app.include_router(plans_router)
 app.include_router(executions_router)
 app.include_router(inspections_router)
 app.include_router(plan_evidence_router)
+app.include_router(plan_links_router)
 
 app.mount(
     "/static",

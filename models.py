@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import TypeDecorator
 
 from database import Base
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, Integer, String, Text, Uuid, text
 
 
 class UTCDateTime(TypeDecorator):
@@ -270,3 +271,59 @@ class InspectionRecord(Base):
 
     plan: Mapped[PlanInstance] = relationship()
     location: Mapped[Location | None] = relationship()
+
+
+class RequestPlanLink(Base):
+    __tablename__ = "request_plan_links"
+    __table_args__ = (
+        CheckConstraint("version >= 1", name="ck_link_version"),
+        CheckConstraint(
+            "length(trim(linked_by)) >= 1 AND length(linked_by) <= 120",
+            name="ck_link_actor",
+        ),
+        CheckConstraint(
+            "length(trim(reason)) >= 1 AND length(reason) <= 2000",
+            name="ck_link_reason",
+        ),
+        CheckConstraint("status IN ('active', 'revoked')", name="ck_link_status"),
+        CheckConstraint(
+            "(status = 'active' AND revocation_request_id IS NULL AND revoked_at IS NULL "
+            "AND revoked_by IS NULL AND revoke_reason IS NULL) OR "
+            "(status = 'revoked' AND revocation_request_id IS NOT NULL AND revoked_at IS NOT NULL "
+            "AND revoked_by IS NOT NULL AND revoke_reason IS NOT NULL AND version >= 2)",
+            name="ck_link_revocation_fields",
+        ),
+        CheckConstraint(
+            "revoked_at IS NULL OR revoked_at >= linked_at",
+            name="ck_link_time_order",
+        ),
+        CheckConstraint(
+            "revoked_by IS NULL OR (length(trim(revoked_by)) >= 1 AND length(revoked_by) <= 120)",
+            name="ck_link_revoke_actor",
+        ),
+        CheckConstraint(
+            "revoke_reason IS NULL OR (length(trim(revoke_reason)) >= 1 AND length(revoke_reason) <= 2000)",
+            name="ck_link_revoke_reason",
+        ),
+        Index(
+            "uq_link_active_pair", "report_id", "plan_id", unique=True,
+            sqlite_where=text("status = 'active'"),
+        ),
+    )
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    request_id: Mapped[UUID] = mapped_column(Uuid, unique=True)
+    report_id: Mapped[UUID] = mapped_column(ForeignKey("service_requests.id"), index=True)
+    plan_id: Mapped[UUID] = mapped_column(ForeignKey("plan_instances.id"), index=True)
+    linked_by: Mapped[str] = mapped_column(String(120))
+    reason: Mapped[str] = mapped_column(Text)
+    linked_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utc_now)
+    status: Mapped[str] = mapped_column(String(20), default="active")
+    version: Mapped[int] = mapped_column(Integer, default=1)
+    revocation_request_id: Mapped[UUID | None] = mapped_column(Uuid, unique=True)
+    revoked_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    revoked_by: Mapped[str | None] = mapped_column(String(120))
+    revoke_reason: Mapped[str | None] = mapped_column(Text)
+
+    report: Mapped[ServiceRequest] = relationship()
+    plan: Mapped[PlanInstance] = relationship()

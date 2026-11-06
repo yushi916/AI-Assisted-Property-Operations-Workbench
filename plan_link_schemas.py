@@ -1,6 +1,7 @@
+from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator
 
 
 class RequestPlanLinkCreate(BaseModel):
@@ -17,3 +18,17 @@ class RequestPlanLinkCreate(BaseModel):
         if not value.strip():
             raise ValueError("不能仅包含空白字符")
         return value
+
+
+class RequestPlanLinkRead(RequestPlanLinkCreate):
+    model_config = ConfigDict(from_attributes=True, extra="forbid")
+
+    id: UUID
+    report_id: UUID
+    linked_at: AwareDatetime
+    status: Literal["active", "revoked"]
+    version: int = Field(ge=1)
+    revocation_request_id: UUID | None
+    revoked_at: AwareDatetime | None
+    revoked_by: str | None
+    revoke_reason: str | None

@@ -53,7 +53,8 @@ class TestDatabase(unittest.TestCase):
             inspect(self.engine).get_table_names(),
             [
                 "execution_locations", "execution_records", "inspection_records",
-                "locations", "plan_instances", "plan_locations", "service_requests",
+                "locations", "plan_instances", "plan_locations",
+                "request_plan_links", "service_requests",
             ],
         )
         with self.engine.connect() as first, self.engine.connect() as second:
