@@ -94,7 +94,14 @@ async function openReport(id) {
             description.textContent = value;
             container.append(term, description);
         }
-
+        const evidenceLink = document.createElement("a");
+        evidenceLink.href = "/report-evidence?report_id=" + encodeURIComponent(report.id);
+        evidenceLink.textContent = "打开联合证据核查";
+        const entry = document.createElement("dd");
+        entry.append(evidenceLink);
+        const label = document.createElement("dt");
+        label.textContent = "联合核查入口";
+        container.append(label, entry);
         document.querySelector("#detail-description").textContent = report.description;
         detail.hidden = false;
         detailMessage.textContent = "已读取保存记录。关联地点和风险声明不代表已经完成核实。";

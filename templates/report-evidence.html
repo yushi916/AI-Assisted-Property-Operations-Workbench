@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ page_title }}</title>
+    <style>
+        body { max-width: 1000px; margin: 32px auto; padding: 0 20px; font-family: sans-serif; line-height: 1.7; }
+        button { padding: 8px 12px; font: inherit; }
+        pre { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; }
+        dd, li, summary { overflow-wrap: anywhere; }
+        section, details { margin: 16px 0; }
+        article { border: 1px solid #ddd; padding: 16px; margin: 20px 0; }
+        select, input, textarea { max-width: 100%; font: inherit; box-sizing: border-box; }
+    </style>
+    <script src="{{ url_for('static', path='/report-link-actions.js') }}" type="module"></script>
+</head>
+<body>
+    <main id="report-evidence" data-report-id="{{ report_id }}">
+        <h1>{{ page_title }}</h1>
+        <p><a href="{{ url_for('reports_page') }}">返回报事列表</a></p>
+        <p>有效关联用于本次取证；撤销历史保留。时间先后不直接证明原因或履约结果。</p>
+        <button id="refresh-report-evidence" type="button" disabled>刷新联合证据</button>
+        <p id="report-evidence-message" role="status" aria-live="polite">尚未查询。</p>
+        <section aria-labelledby="link-action-title">
+            <h2 id="link-action-title">人工关联与撤销</h2>
+            <p>关联表示共同核查；撤销保留历史。请填写本次操作理由。</p>
+            <button id="reload-action-plans" type="button">重新加载计划列表</button>
+            <p id="action-plan-message" role="status"></p>
+            <form id="link-action-form">
+                <fieldset id="link-action-fields" disabled>
+                    <legend>本次操作</legend>
+                    <label>操作类型
+                        <select name="kind"><option value="link">关联计划</option><option value="revoke">撤销关联</option></select>
+                    </label>
+                    <div id="action-plan-choice">
+                        <label>选择计划 <select name="plan_id" required></select></label>
+                    </div>
+                    <div id="action-link-choice" hidden>
+                        <label>选择当前有效关联 <select name="link_id"></select></label>
+                    </div>
+                    <pre id="action-target"></pre>
+                    <p><label>填报人 <input name="actor" required maxlength="120"></label></p>
+                    <p><label>操作理由<br><textarea name="reason" required maxlength="2000" rows="3" cols="60"></textarea></label></p>
+                </fieldset>
+                <button id="send-link-action" type="submit" disabled>保存本次操作</button>
+            </form>
+            <p id="link-action-message" role="status" aria-live="polite"></p>
+            <p id="link-action-reference" hidden>本次操作提交编号：<code id="link-action-request-id"></code></p>
+            <p id="link-action-retry-note" hidden>结果尚未确认，请保留当前标签页并原样重试；本页暂存支持刷新后继续。</p>
+            <pre id="link-action-receipt" hidden></pre>
+            <button id="new-link-action" type="button" hidden>核对当前记录后开始新操作</button>
+        </section>
+        <div id="report-evidence-result" hidden>
+            <section aria-labelledby="report-summary-title">
+                <h2 id="report-summary-title">居民报事</h2>
+                <dl id="joint-report-fields"></dl>
+                <h3>已保存的原始描述</h3>
+                <pre id="joint-report-description"></pre>
+            </section>
+            <section aria-labelledby="joint-links-title">
+                <h2 id="joint-links-title">关联及撤销历史</h2>
+                <div id="joint-links"></div>
+            </section>
+            <section aria-labelledby="joint-plans-title">
+                <h2 id="joint-plans-title">有效关联计划与相关证据</h2>
+                <div id="joint-plans"></div>
+            </section>
+        </div>
+        <noscript><p>请启用 JavaScript 后查询联合证据。</p></noscript>
+    </main>
+</body>
+</html>

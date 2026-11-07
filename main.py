@@ -13,6 +13,7 @@ from routers.executions import router as executions_router
 from routers.inspections import router as inspections_router
 from routers.plan_evidence import router as plan_evidence_router
 from routers.plan_links import router as plan_links_router
+from routers.report_evidence import router as report_evidence_router
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -25,6 +26,8 @@ app.include_router(executions_router)
 app.include_router(inspections_router)
 app.include_router(plan_evidence_router)
 app.include_router(plan_links_router)
+app.include_router(report_evidence_router)
+
 
 app.mount(
     "/static",
@@ -111,4 +114,15 @@ def plan_evidence_page(request: Request, plan_id: UUID):
         request=request,
         name="plan-evidence.html",
         context={"page_title": "计划证据核对", "plan_id": str(plan_id)},
+    )
+
+
+@app.get(
+    "/report-evidence", response_class=HTMLResponse,
+    include_in_schema=False, name="report_evidence_page",
+)
+def report_evidence_page(request: Request, report_id: UUID):
+    return templates.TemplateResponse(
+        request=request, name="report-evidence.html",
+        context={"page_title": "报事与履约证据核查", "report_id": str(report_id)},
     )
