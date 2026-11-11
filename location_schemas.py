@@ -4,7 +4,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 
 
 LocationKind = Literal[
-    "community", "area", "building", "unit", "room", "public_space", "unknown"
+    "community", "area", "building", "unit", "floor", "room", "public_space", "unknown"
 ]
 
 

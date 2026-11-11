@@ -19,6 +19,7 @@ from models import (
     PlanInstance, PlanLocation, RequestPlanLink, ServiceRequest,
 )
 from seed_demo_location_hierarchy import seed_demo_location_hierarchy
+from tests.location_reference import create_pre_floor_schema
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -93,7 +94,10 @@ class PlanLinkDataTests(unittest.TestCase):
         self.assertEqual(self.rows(), self.before)
         reference = create_db_engine(Path(self.folder.name) / "reference.db")
         try:
-            Base.metadata.create_all(reference)
+            create_pre_floor_schema(
+                reference,
+                table_names=(*OLD, "request_plan_links"),
+            )
             with self.engine.connect() as actual, reference.connect() as expected:
                 self.assertEqual(MigrationContext.configure(actual).get_current_heads(), (CURRENT,))
                 signature = schema_signature(actual)

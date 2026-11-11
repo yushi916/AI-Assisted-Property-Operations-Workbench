@@ -9,6 +9,14 @@ let submission = null;
 let busy = false;
 let blocked = false;
 
+const locationPicker = typeof createLocationPicker === "function"
+    ? createLocationPicker(
+        document.querySelector("#location-picker"),
+        field("location_id"),
+        () => blocked || fields.disabled,
+    )
+    : null;
+
 function field(name) {
     return form.elements.namedItem(name);
 }
@@ -25,6 +33,7 @@ function selectLocation(locationId) {
     }
 
     select.value = id;
+    locationPicker?.sync();
 }
 
 async function loadLocations() {
@@ -36,6 +45,7 @@ async function loadLocations() {
     try {
         const response = await fetch("/api/locations", {
             signal: controller.signal,
+            cache: "no-store",
         });
         if (!response.ok) throw new Error("地点查询失败");
 
@@ -61,6 +71,7 @@ async function loadLocations() {
 
         select.replaceChildren(...options);
         selectLocation(previous);
+        locationPicker?.setLocations(locations);
         notice.textContent = locations.length
             ? "请选择已确认的地点；不确定时保留待核实。"
             : "暂无地点台账，可按待核实受理。";
@@ -140,6 +151,13 @@ form.addEventListener("submit", async event => {
 
     try {
         if (submission?.phase !== "pending") {
+            if (locationPicker?.hasDraft()) {
+                message.textContent =
+                    "地点查找尚未确认，请点击“确认使用此地点”"
+                    + "或“地点待核实”后再提交。";
+                return;
+            }
+
             if (!form.reportValidity()) return;
             const observed = field("observed_at").value;
             remember({

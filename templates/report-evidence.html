@@ -14,6 +14,7 @@
         select, input, textarea { max-width: 100%; font: inherit; box-sizing: border-box; }
     </style>
     <script src="{{ url_for('static', path='/report-link-actions.js') }}" type="module"></script>
+    <script src="{{ url_for('static', path='/report-agent-runs.js') }}?v=1" type="module"></script>
 </head>
 <body>
     <main id="report-evidence" data-report-id="{{ report_id }}">
@@ -67,6 +68,24 @@
                 <div id="joint-plans"></div>
             </section>
         </div>
+                <section aria-labelledby="agent-runs-title">
+            <h2 id="agent-runs-title">Agent 辅助研判</h2>
+            <p>请对照证据核查结果。Gemini 草稿待人员审核。</p>
+            <button id="generate-agent-run" type="button" disabled>生成 Gemini 草稿</button>
+            <button id="refresh-agent-runs" type="button">读取已保存结果</button>
+            <p id="agent-run-message" role="status" aria-live="polite"></p>
+            <div id="agent-run-result" hidden>
+                <p id="agent-run-meta"></p>
+                <h3>生成时的程序巡查核对</h3>
+                <ul id="agent-run-scope"></ul>
+                <div id="agent-run-draft" hidden>
+                    <h3>Gemini 待审核草稿</h3>
+                    <ul id="agent-run-observations"></ul>
+                    <h4>待核实事项</h4>
+                    <ul id="agent-run-verification"></ul>
+                </div>
+            </div>
+        </section>
         <noscript><p>请启用 JavaScript 后查询联合证据。</p></noscript>
     </main>
 </body>

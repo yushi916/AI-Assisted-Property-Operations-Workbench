@@ -19,6 +19,7 @@ from models import (
     PlanInstance, PlanLocation, ServiceRequest,
 )
 from seed_demo_location_hierarchy import seed_demo_location_hierarchy
+from tests.location_reference import create_pre_floor_schema
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -100,9 +101,7 @@ class InspectionModelTests(unittest.TestCase):
     def test_latest_inspection_revision_matches_all_seven_models(self):
         reference = create_db_engine(Path(self.folder.name) / "reference.db")
         try:
-            Base.metadata.create_all(
-                reference, tables=[Base.metadata.tables[name] for name in ALL]
-            )
+            create_pre_floor_schema(reference, table_names=ALL)
             with self.engine.connect() as actual, reference.connect() as expected:
                 self.assertEqual(
                     MigrationContext.configure(actual).get_current_heads(),

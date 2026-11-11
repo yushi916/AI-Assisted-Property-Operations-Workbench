@@ -1,27 +1,38 @@
+import json
 import sqlite3
 import tempfile
 import unittest
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import closing
 from datetime import UTC, datetime
 from pathlib import Path
-from unittest.mock import patch
+from threading import Event
+from unittest.mock import Mock, patch
 from uuid import UUID, uuid4
 
 from alembic import command
 from alembic.config import Config
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from pydantic import ValidationError
 from sqlalchemy import event
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker
 
-from database import create_db_engine, engine as project_engine, get_db
+from adopt_intake_database import schema_signature
+from agent_evidence import build_agent_evidence, validate_agent_suggestion
+from agent_runner import run_agent
+from database import Base, create_db_engine, engine as project_engine, get_db
 from models import (
     ExecutionLocation, ExecutionRecord, InspectionRecord, PlanInstance,
     PlanLocation, RequestPlanLink, ServiceRequest,
 )
-from routers.report_evidence import router
+from report_evidence_schemas import ReportEvidenceRead
+from routers.agent_runs import get_agent_model, router as agent_runs_router
+from routers.report_evidence import read_report_evidence, router
 from seed_demo_location_hierarchy import seed_demo_location_hierarchy
+from tests.location_reference import create_pre_floor_schema
+from models import AgentRun
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -265,6 +276,328 @@ class ReportEvidenceAPITests(unittest.TestCase):
         with TestClient(app) as client:
             paths = client.get("/openapi.json").json()["paths"]
         self.assertIn("get", paths["/api/service-requests/{report_id}/evidence-check"])
+        self.assertIn("post", paths["/api/service-requests/{report_id}/agent-runs"])
+
+    def agent_evidence(self):
+        response = self.client.get(self.url())
+        self.assertEqual(response.status_code, 200, response.text)
+        return build_agent_evidence(ReportEvidenceRead.model_validate(response.json()))
+
+    def test_agent_evidence_uses_projected_fields_and_report_time_comparison(self):
+        link = self.link()
+        revoked = self.link(plan=self.plans[1], revoked=True)
+        executions, inspections = self.evidence()
+        unknown, unknown_inspections = self.evidence(point=None)
+        self.evidence(point="LOC-B-LOBBY")
+        self.evidence(plan=self.plans[1])
+        before = self.rows()
+        evidence = self.agent_evidence()
+        records = evidence.records
+        plan_ref = f"plan:{self.plans[0]}"
+        self.assertEqual(evidence.source_rule_version, "report-evidence-v1")
+        self.assertEqual(set(records[evidence.report_ref]),
+                         {"service_category", "description", "risk_status", "location_id", "observed_at"})
+        self.assertEqual(records[evidence.report_ref]["description"], " 合成居民报事 ")
+        self.assertEqual(set(records[f"link:{link}"]), {"plan_ref", "reason"})
+        self.assertNotIn(f"link:{revoked}", records)
+        self.assertNotIn(f"plan:{self.plans[1]}", records)
+        self.assertEqual({ref for ref in records if ref.startswith("execution:")},
+                         {f"execution:{executions[0]}", f"execution:{unknown[0]}"})
+        self.assertEqual({ref for ref in records if ref.startswith("inspection:")},
+                         {f"inspection:{inspections[0]}", f"inspection:{unknown_inspections[0]}"})
+        self.assertEqual(records[f"execution:{executions[0]}"]["report_comparison"]["relation"], "after")
+        self.assertEqual(records[f"execution:{executions[0]}"]["plan_ref"], plan_ref)
+        self.assertNotIn("executor_name", records[f"execution:{executions[0]}"])
+        self.assertNotIn("inspector_name", records[f"inspection:{inspections[0]}"])
+        self.assertEqual(records[f"execution:{unknown[0]}"]["report_comparison"]["relation"], "unknown")
+        self.assertEqual(records[f"execution:{unknown[0]}"]["location_ids"], [])
+        self.assertEqual(self.rows(), before)
+
+    def test_agent_evidence_limits_mismatched_plan_to_context(self):
+        link = self.link()
+        self.evidence()
+        with self.sessions.begin() as db:
+            db.get(PlanInstance, self.plans[0]).service_category = "water_supply"
+        evidence = self.agent_evidence()
+        plan_ref = f"plan:{self.plans[0]}"
+        self.assertEqual(set(evidence.records), {evidence.report_ref, f"link:{link}", plan_ref})
+        self.assertFalse(evidence.records[plan_ref]["scope_matches"])
+        self.assertTrue(evidence.records[plan_ref]["warnings"])
+
+    def test_agent_suggestion_accepts_current_refs_and_rejects_wrong_refs(self):
+        self.link()
+        self.evidence()
+        evidence = self.agent_evidence()
+        exec_ref = next(ref for ref in evidence.records if ref.startswith("execution:"))
+        payload = {
+            "observations": [{"text": "观察晚于声称完成。", "evidence_refs": [evidence.report_ref, exec_ref]}],
+            "verification_items": ["现场核对是否再次产生。"],
+        }
+        suggestion = validate_agent_suggestion(json.dumps(payload), evidence)
+        self.assertEqual(suggestion.observations[0].evidence_refs, [evidence.report_ref, exec_ref])
+        for ref in (f"report:{self.reports[1]}", f"execution:{uuid4()}", exec_ref.replace("execution:", "inspection:")):
+            with self.subTest(ref=ref), self.assertRaisesRegex(ValueError, "证据范围外"):
+                payload["observations"][0]["evidence_refs"] = [ref]
+                validate_agent_suggestion(json.dumps(payload), evidence)
+
+    def test_agent_suggestion_for_unlinked_report_requires_cited_observation_and_manual_check(self):
+        evidence = self.agent_evidence()
+        self.assertEqual(list(evidence.records), [evidence.report_ref])
+        observation = {"text": "现有材料只有居民报事。", "evidence_refs": [evidence.report_ref]}
+        payload = {"observations": [observation], "verification_items": ["查找是否存在相应计划。"]}
+        self.assertEqual(len(validate_agent_suggestion(json.dumps(payload), evidence).verification_items), 1)
+        for bad in (
+            {**payload, "observations": [{**observation, "evidence_refs": []}]},
+            {**payload, "observations": [{**observation, "text": "  "}]},
+            {**payload, "verification_items": []},
+            {**payload, "auto_close": True},
+        ):
+            with self.subTest(payload=bad), self.assertRaises(ValidationError):
+                validate_agent_suggestion(json.dumps(bad), evidence)
+
+
+    def test_agent_runner_uses_existing_database_evidence_for_selected_report(self):
+        link = self.link()
+        executions, inspections = self.evidence()
+        self.link(plan=self.plans[1], report=self.reports[1])
+        self.evidence(plan=self.plans[1])
+        self.evidence(point="LOC-B-LOBBY")
+        before = self.rows()
+        model = Mock()
+        report_ref = f"report:{self.reports[0]}"
+        execution_ref = f"execution:{executions[0]}"
+        draft = {
+            "observations": [{
+                "text": "居民观察晚于声称完成。",
+                "evidence_refs": [report_ref, execution_ref],
+            }],
+            "verification_items": ["现场原因仍待核实。"],
+        }
+
+        with self.sessions() as db:
+            def suggest(evidence):
+                self.assertFalse(db.in_transaction())
+                return json.dumps(draft)
+
+            model.suggest.side_effect = suggest
+            outcome = run_agent(model, lambda: build_agent_evidence(read_report_evidence(self.reports[0], db)))
+
+        self.assertEqual(outcome.status, "pending_review")
+        self.assertEqual(outcome.suggestion.model_dump(), draft)
+        self.assertEqual(set(outcome.evidence.records), {
+            report_ref, execution_ref, f"inspection:{inspections[0]}",
+            f"plan:{self.plans[0]}",
+            f"link:{link}",
+        })
+        self.assertEqual(outcome.evidence.records[execution_ref]["report_comparison"]["relation"], "after")
+        self.assertEqual(self.rows(), before)
+
+    def test_agent_runner_rejects_reference_from_another_report_in_database(self):
+        self.link()
+        self.evidence()
+        self.link(plan=self.plans[1], report=self.reports[1])
+        other_executions, _ = self.evidence(plan=self.plans[1])
+        before = self.rows()
+        other_ref = f"execution:{other_executions[0]}"
+        model = Mock()
+        model.suggest.return_value = json.dumps({
+            "observations": [{"text": "尝试引用另一条报事的执行记录。", "evidence_refs": [other_ref]}],
+            "verification_items": ["复核来源。"],
+        })
+        with self.sessions() as db:
+            outcome = run_agent(model, lambda: build_agent_evidence(read_report_evidence(self.reports[0], db)))
+
+        self.assertEqual(outcome.status, "failed")
+        self.assertEqual((outcome.failure_stage, outcome.error_code), ("validation", "EvidenceReferenceError"))
+        self.assertNotIn(other_ref, outcome.evidence.records)
+        self.assertEqual(self.rows(), before)
+
+    def test_agent_runner_stops_when_joint_database_read_fails(self):
+        self.link()
+        before = self.rows()
+        model = Mock()
+        failure = OperationalError("SELECT", (), sqlite3.OperationalError("合成取证失败"))
+        with self.sessions() as db, patch("routers.report_evidence.read_plan_evidence", side_effect=failure):
+            outcome = run_agent(model, lambda: build_agent_evidence(read_report_evidence(self.reports[0], db)))
+            self.assertFalse(db.in_transaction())
+
+        self.assertEqual(outcome.status, "failed")
+        self.assertEqual((outcome.failure_stage, outcome.error_code), ("evidence_read", "OperationalError"))
+        self.assertIsNone(outcome.evidence)
+        self.assertIsNone(outcome.suggestion)
+        model.suggest.assert_not_called()
+        self.assertEqual(self.rows(), before)
+
+    def enable_agent_runs(self):
+        before = self.rows()
+        config = Config(str(ROOT / "alembic.ini"))
+        with self.engine.begin() as connection:
+            config.attributes["connection"] = connection
+            command.upgrade(config, "0007_agent_runs")
+        self.assertEqual(self.rows(), before)
+        model = Mock()
+        model.model_name = "deterministic-test"
+        self.app.include_router(agent_runs_router)
+        self.app.dependency_overrides[get_agent_model] = lambda: model
+        return model
+
+    def agent_runs_url(self, report=None):
+        return f"/api/service-requests/{report or self.reports[0]}/agent-runs"
+
+    def agent_run_demo(self):
+        self.link()
+        executions, _ = self.evidence()
+        model = self.enable_agent_runs()
+        model.suggest.return_value = json.dumps({
+            "observations": [{
+                "text": "居民观察晚于声称完成。",
+                "evidence_refs": [f"report:{self.reports[0]}", f"execution:{executions[0]}"],
+            }],
+            "verification_items": ["现场原因仍待核实。"],
+        })
+        return model
+
+    def test_0007_migration_matches_orm_and_keeps_old_rows(self):
+        self.link()
+        self.evidence()
+        self.enable_agent_runs()
+        expected = create_db_engine(self.path.with_name("expected.db"))
+        self.addCleanup(expected.dispose)
+        create_pre_floor_schema(expected)
+        with self.engine.connect() as actual, expected.connect() as orm:
+            self.assertEqual(schema_signature(actual), schema_signature(orm))
+            self.assertEqual(actual.exec_driver_sql("SELECT version_num FROM alembic_version").scalar_one(),
+                             "0007_agent_runs")
+
+    def test_saves_and_reads_back_pending_a_lobby_suggestion(self):
+        model = self.agent_run_demo()
+        before = self.rows()
+        body = self.client.post(self.agent_runs_url(), json={"request_id": str(uuid4())})
+        self.assertEqual(body.status_code, 201, body.text)
+        saved = body.json()
+        self.assertEqual(saved["status"], "pending_review")
+        observation = saved["suggestion"]["observations"][0]
+        self.assertEqual(observation["text"], "居民观察晚于声称完成。")
+        execution_ref = observation["evidence_refs"][1]
+        self.assertEqual(saved["evidence"]["records"][execution_ref]["report_comparison"]["relation"], "after")
+        self.assertEqual(saved["suggestion"]["verification_items"], ["现场原因仍待核实。"])
+        self.engine.dispose()
+        self.assertEqual(self.client.get(self.agent_runs_url()).json(), [saved])
+        self.assertEqual(self.rows(), before)
+        model.suggest.assert_called_once()
+
+    def test_saves_and_reads_back_failure_without_suggestion(self):
+        model = self.agent_run_demo()
+        model.suggest.side_effect = TimeoutError("internal details")
+        before = self.rows()
+        body = self.client.post(self.agent_runs_url(), json={"request_id": str(uuid4())})
+        self.assertEqual(body.status_code, 201, body.text)
+        saved = body.json()
+        self.assertEqual((saved["status"], saved["failure_stage"], saved["error_code"]),
+                         ("failed", "suggestion_request", "TimeoutError"))
+        self.assertIsNone(saved["suggestion"])
+        self.assertIsNotNone(saved["evidence"])
+        self.assertNotIn("internal details", body.text)
+        self.assertEqual(self.client.get(self.agent_runs_url()).json(), [saved])
+        self.assertEqual(self.rows(), before)
+
+    def test_replay_reuses_record_and_respects_report_scope(self):
+        model = self.agent_run_demo()
+        payload = {"request_id": str(uuid4())}
+        created = self.client.post(self.agent_runs_url(), json=payload)
+        replay = self.client.post(self.agent_runs_url(), json=payload)
+        self.assertEqual((created.status_code, replay.status_code), (201, 200))
+        self.assertEqual(created.json(), replay.json())
+        other_url = self.agent_runs_url(self.reports[1])
+        self.assertEqual(self.client.post(other_url, json=payload).status_code, 409)
+        self.assertEqual(self.client.get(other_url).json(), [])
+        self.assertEqual(self.client.get(self.agent_runs_url()).json(), [created.json()])
+        model.suggest.assert_called_once()
+
+    def test_concurrent_replay_does_not_start_another_model_call(self):
+        model = self.agent_run_demo()
+        started, release = Event(), Event()
+        payload = {"request_id": str(uuid4())}
+
+        draft = model.suggest.return_value
+
+        def suggest(evidence):
+            started.set()
+            if not release.wait(8):
+                raise TimeoutError()
+            return draft
+
+        model.suggest.side_effect = suggest
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            first = pool.submit(self.client.post, self.agent_runs_url(), json=payload)
+            try:
+                self.assertTrue(started.wait(5))
+                replay = self.client.post(self.agent_runs_url(), json=payload)
+                self.assertEqual(replay.status_code, 200, replay.text)
+                self.assertEqual(replay.json()["status"], "running")
+            finally:
+                release.set()
+            self.assertEqual(first.result().json()["status"], "pending_review")
+        model.suggest.assert_called_once()
+        self.assertEqual(len(self.client.get(self.agent_runs_url()).json()), 1)
+
+    def test_invalid_reference_saves_failure_without_suggestion(self):
+        model = self.agent_run_demo()
+
+        # 引用同库中的另一条报事，但它不属于本次证据快照。
+        draft = json.loads(model.suggest.return_value)
+        draft["observations"][0]["evidence_refs"] = [
+            f"report:{self.reports[1]}"
+        ]
+        model.suggest.return_value = json.dumps(draft)
+
+        response = self.client.post(
+            self.agent_runs_url(),
+            json={"request_id": str(uuid4())},
+        )
+        self.assertEqual(response.status_code, 201, response.text)
+
+        saved = response.json()
+        self.assertEqual(
+            (
+                saved["status"],
+                saved["failure_stage"],
+                saved["error_code"],
+            ),
+            ("failed", "validation", "EvidenceReferenceError"),
+        )
+        self.assertIsNone(saved["suggestion"])
+        self.assertEqual(
+            self.client.get(self.agent_runs_url()).json(),
+            [saved],
+        )
+
+    def test_reads_failures_written_by_two_round_version(self):
+        self.enable_agent_runs()
+
+        # 在临时库中模拟旧版两轮执行器保存的失败记录。
+        with self.sessions.begin() as db:
+            for stage in ("tool_request", "tool_dispatch"):
+                db.add(AgentRun(
+                    id=uuid4(),
+                    report_id=self.reports[0],
+                    status="failed",
+                    model_name="old-test-model",
+                    created_at=at("10:00"),
+                    finished_at=at("10:01"),
+                    failure_stage=stage,
+                    error_code="TestError",
+                ))
+
+        response = self.client.get(self.agent_runs_url())
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(
+            {
+                row["failure_stage"]
+                for row in response.json()
+            },
+            {"tool_request", "tool_dispatch"},
+        )
 
 
 if __name__ == "__main__":

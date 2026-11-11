@@ -6,7 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import TypeDecorator
 
 from database import Base
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, Integer, String, Text, Uuid, text
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, Integer, JSON, String, Text, Uuid, text
 
 
 class UTCDateTime(TypeDecorator):
@@ -39,21 +39,17 @@ class Location(Base):
             name="ck_location_not_self",
         ),
         CheckConstraint(
-            """kind IN (
-                'community', 'area', 'building', 'unit',
-                'room', 'public_space', 'unknown'
-            )""",
+            "kind IN ('community', 'unknown', 'area', 'building', 'unit', "
+            "'room', 'public_space', 'floor')",
             name="ck_location_kind",
         ),
         CheckConstraint(
-            """(kind IN ('community', 'unknown') AND parent_id IS NULL)
-            OR
-            (kind IN ('area', 'building', 'unit', 'room', 'public_space')
-             AND parent_id IS NOT NULL)""",
+            "(kind IN ('community', 'unknown') AND parent_id IS NULL) OR "
+            "(kind IN ('area', 'building', 'unit', 'room', 'public_space', 'floor') "
+            "AND parent_id IS NOT NULL)",
             name="ck_location_parent_presence",
         ),
     )
-
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     name: Mapped[str] = mapped_column(String(120))
     version: Mapped[int] = mapped_column(Integer, default=1)
@@ -327,3 +323,36 @@ class RequestPlanLink(Base):
 
     report: Mapped[ServiceRequest] = relationship()
     plan: Mapped[PlanInstance] = relationship()
+
+
+class AgentRun(Base):
+    __tablename__ = "agent_runs"
+    __table_args__ = (
+        Index(
+            "ix_agent_runs_report_created",
+            "report_id", "created_at", "id",
+        ),
+        CheckConstraint(
+            "(status = 'running' AND finished_at IS NULL "
+            "AND suggestion IS NULL AND evidence IS NULL "
+            "AND failure_stage IS NULL AND error_code IS NULL) OR "
+            "(status = 'pending_review' AND finished_at IS NOT NULL "
+            "AND suggestion IS NOT NULL AND evidence IS NOT NULL "
+            "AND failure_stage IS NULL AND error_code IS NULL) OR "
+            "(status = 'failed' AND finished_at IS NOT NULL "
+            "AND suggestion IS NULL AND failure_stage IS NOT NULL "
+            "AND error_code IS NOT NULL)",
+            name="ck_agent_run_state",
+        ),
+    )
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
+    report_id: Mapped[UUID] = mapped_column(ForeignKey("service_requests.id"), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    model_name: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), nullable=False)
+    finished_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
+    evidence: Mapped[dict | None] = mapped_column(JSON(none_as_null=True), nullable=True)
+    suggestion: Mapped[dict | None] = mapped_column(JSON(none_as_null=True), nullable=True)
+    failure_stage: Mapped[str | None] = mapped_column(String(24), nullable=True)
+    error_code: Mapped[str | None] = mapped_column(Text, nullable=True)

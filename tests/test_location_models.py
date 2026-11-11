@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from adopt_intake_database import schema_signature
 from database import Base, create_db_engine, engine as project_engine
 from models import Location, PlanInstance, PlanLocation, ServiceRequest
+from tests.location_reference import create_pre_floor_schema
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -44,7 +45,7 @@ class LocationModelTests(unittest.TestCase):
     def test_location_migration_matches_its_original_tables(self):
         reference = create_db_engine(Path(self.folder.name) / "reference.db")
         try:
-            Base.metadata.create_all(reference)
+            create_pre_floor_schema(reference)
             with self.engine.connect() as actual, reference.connect() as expected:
                 self.assertEqual(
                     MigrationContext.configure(actual).get_current_heads(),

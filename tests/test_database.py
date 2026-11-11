@@ -52,7 +52,7 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(
             inspect(self.engine).get_table_names(),
             [
-                "execution_locations", "execution_records", "inspection_records",
+                "agent_runs", "execution_locations", "execution_records", "inspection_records",
                 "locations", "plan_instances", "plan_locations",
                 "request_plan_links", "service_requests",
             ],

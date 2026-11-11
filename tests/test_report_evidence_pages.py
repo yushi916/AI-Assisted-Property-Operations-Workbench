@@ -55,11 +55,15 @@ class ReportEvidencePageTests(unittest.TestCase):
             response = client.get("/report-evidence", params={"report_id": REPORT_ID})
             parser = PageParser()
             parser.feed(response.text)
-            self.assertEqual(len(parser.scripts), 1)
-            self.assertEqual(parser.scripts[0]["type"], "module")
-            script = client.get(parser.scripts[0]["src"])
-        self.assertEqual(script.status_code, 200)
-        self.assertIn("javascript", script.headers["content-type"])
+            self.assertEqual(len(parser.scripts), 2)
+            self.assertIn("report-agent-runs.js", parser.scripts[1]["src"])
+            self.assertIn("disabled", parser.elements["generate-agent-run"])
+            self.assertIn("hidden", parser.elements["agent-run-result"])
+            for entry in parser.scripts:
+                self.assertEqual(entry["type"], "module")
+                script = client.get(entry["src"])
+                self.assertEqual(script.status_code, 200)
+                self.assertIn("javascript", script.headers["content-type"])
 
     def test_action_form_and_receipt_controls_are_connected(self):
         with TestClient(app) as client:

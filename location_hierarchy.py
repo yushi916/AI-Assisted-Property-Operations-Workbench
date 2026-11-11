@@ -6,8 +6,9 @@ ALLOWED_PARENT_KINDS = {
     "area": {"community"},
     "building": {"community", "area"},
     "unit": {"building"},
-    "room": {"building", "unit"},
-    "public_space": {"community", "area", "building", "unit"},
+    "floor": {"unit"},
+    "room": {"building", "unit", "floor"},
+    "public_space": {"community", "area", "building", "unit", "floor"},
 }
 
 
