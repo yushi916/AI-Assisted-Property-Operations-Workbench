@@ -70,16 +70,16 @@ class ChallengeRoundTests(unittest.TestCase):
         self.assertEqual(result['status'], 'finished')
         self.assertEqual(result['attempted'], ['H1-1', 'H1-2', 'H2-1', 'H2-2'])
         for case in ('H1', 'H2'):
-            bundle = json.loads((self.output / f'{case}-results.json').read_text())
+            bundle = json.loads((self.output / f'{case}-results.json').read_text(encoding='utf-8'))
             self.assertTrue(all(x['structural_checks'] == 'passed' for x in bundle['runs']))
             self.assertTrue(all(x['semantic_review']['status'] == 'not_reviewed' for x in bundle['runs']))
-            review = json.loads((self.output / f'{case}-review.json').read_text())
+            review = json.loads((self.output / f'{case}-review.json').read_text(encoding='utf-8'))
             self.assertEqual(review['author_confirmation'], 'not_reviewed')
             self.assertEqual(review['assistant_review'], 'not_reviewed')
             self.assertEqual(len(review['dimension_reviews']), 2)
             self.assertEqual(len(review['dimension_reviews'][0]['dimensions']), 8)
             self.assertTrue(all(x['fact_coverage'] == x['cited_source_support'] == 'not_reviewed' for x in review['entries']))
-            html = (self.output / f'{case}-review.html').read_text()
+            html = (self.output / f'{case}-review.html').read_text(encoding='utf-8')
             self.assertIn('同一快照全部记录', html)
             self.assertIn('冻结评审标准', html)
             for ref, original in bundle['input']['records'].items():
@@ -95,7 +95,7 @@ class ChallengeRoundTests(unittest.TestCase):
             return '{bad JSON' if len(count) == 1 else json.dumps(automatic_draft(evidence))
         self.run_fake(fake)
         self.assertEqual(len(count), 4)
-        row = json.loads((self.output / 'H1-trial-1.json').read_text())
+        row = json.loads((self.output / 'H1-trial-1.json').read_text(encoding='utf-8'))
         self.assertEqual(row['raw_output'], '{bad JSON')
         self.assertEqual(row['structural_checks'], 'failed')
 
@@ -110,7 +110,7 @@ class ChallengeRoundTests(unittest.TestCase):
         result = self.run_fake(fake)
         self.assertEqual(len(calls), 2)
         self.assertEqual(result['status'], 'stopped_on_request_error')
-        row = json.loads((self.output / 'H1-trial-2.json').read_text())
+        row = json.loads((self.output / 'H1-trial-2.json').read_text(encoding='utf-8'))
         self.assertEqual(row['http_code'], 503)
         self.assertIn('[REDACTED]', row['api_message'])
         self.assertNotIn('synthetic-test-key', row['api_message'])
@@ -121,7 +121,7 @@ class ChallengeRoundTests(unittest.TestCase):
 
     def test_pending_slot_blocks_reentry_without_any_request(self):
         self.output.mkdir()
-        (self.output / 'round-state.json').write_text('{"status":"started"}')
+        (self.output / 'round-state.json').write_text('{"status":"started"}', encoding='utf-8')
         with patch('evaluate_challenge_round.invoke') as fake:
             with self.assertRaises(FileExistsError): self.run_fake(fake)
             fake.assert_not_called()
@@ -140,9 +140,9 @@ class ChallengeRoundTests(unittest.TestCase):
         for name in ('H1.json', 'rubric.json'):
             clone = Path(self.folder_each.name) / name.replace('.', '-')
             shutil.copytree(self.bundle, clone)
-            value = json.loads((clone / name).read_text())
+            value = json.loads((clone / name).read_text(encoding='utf-8'))
             value['changed'] = True
-            (clone / name).write_text(json.dumps(value))
+            (clone / name).write_text(json.dumps(value), encoding='utf-8')
             with self.assertRaises(ValueError): round_eval.verify(clone)
 
     def test_truncated_sdk_response_kept_before_adapter_rejects_it(self):
@@ -163,7 +163,7 @@ class ChallengeRoundTests(unittest.TestCase):
             with self.assertRaises(GeminiUnexpectedResponse):
                 round_eval.invoke(evidence, path)
         self.assertEqual(len(calls), 1)
-        saved = json.loads(path.read_text())
+        saved = json.loads(path.read_text(encoding='utf-8'))
         self.assertEqual(saved['text'], '{partial')
         self.assertIn('MAX_TOKENS', saved['finish_reasons'][0])
         self.assertEqual(saved['usage_metadata']['total_token_count'], 12)
