@@ -59,10 +59,31 @@ class PlanEvidencePageTests(unittest.TestCase):
         with TestClient(app) as client:
             parser = EvidencePageParser()
             parser.feed(client.get("/plan-evidence", params={"plan_id": PLAN_ID}).text)
-            self.assertEqual(parser.scripts, ["http://testserver/static/plan-evidence.js"])
+            self.assertEqual(parser.scripts, ["http://testserver/static/plan-evidence.js?v=material-types-1"])
             response = client.get(parser.scripts[0])
             self.assertEqual(response.status_code, 200)
             self.assertIn("javascript", response.headers["content-type"])
+
+    def test_rule_check_is_distinct_from_observation_and_keeps_result_sections(self):
+        with TestClient(app) as client:
+            html = client.get("/plan-evidence", params={"plan_id": PLAN_ID}).text
+        parser = EvidencePageParser()
+        parser.feed(html)
+        self.assertIn("计划执行与检查记录核对", html)
+        self.assertIn("这是程序规则核对，不调用 AI", html)
+        self.assertIn("未查到明确记录，不代表实际没有开展工作", html)
+        self.assertIn('href="http://testserver/static/workbench.css', html)
+        for element_id in ("evidence-coverage", "evidence-findings", "evidence-comparisons",
+                           "evidence-summary", "evidence-references"):
+            self.assertIn(element_id, parser.elements)
+        self.assertNotIn("open", parser.elements["evidence-run-details"])
+        self.assertNotIn("open", parser.elements["evidence-source-details"])
+        self.assertIn("返回计划列表", html)
+        self.assertIn("计划要求说明安排做什么", html)
+        self.assertIn("本次填报工作地点、现场观察地点在各自记录中单独列出", html)
+        self.assertIn("版本不一致时提示重新核对", html)
+        self.assertNotIn("是否再次产生", html)
+        self.assertLess(html.index('id="evidence-findings"'), html.index('id="evidence-coverage"'))
 
 if __name__ == "__main__":
     unittest.main()

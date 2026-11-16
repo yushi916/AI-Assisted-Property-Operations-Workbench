@@ -1,53 +1,73 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ page_title }}</title>
-    <style>
-        body { max-width: 960px; margin: 32px auto; padding: 0 20px; font-family: sans-serif; line-height: 1.7; }
-        button { padding: 8px 12px; font: inherit; }
-        code, dd, td, li { overflow-wrap: anywhere; }
-        table { width: 100%; text-align: left; border-collapse: collapse; }
-        th, td { padding: 8px; border-bottom: 1px solid #ddd; vertical-align: top; }
-    </style>
-    <script src="{{ url_for('static', path='/plan-evidence.js') }}" defer></script>
-</head>
-<body>
-    <main id="plan-evidence" data-plan-id="{{ plan_id }}">
-        <h1>{{ page_title }}</h1>
-        <p><a href="{{ url_for('plans_page') }}">返回计划列表</a></p>
-        <p>所选计划编号：<code>{{ plan_id }}</code></p>
-        <p>
-            <a href="{{ url_for('executions_page') }}?plan_id={{ plan_id }}">查看该计划执行记录</a> ·
-            <a href="{{ url_for('inspections_page') }}?plan_id={{ plan_id }}">查看该计划巡查记录</a>
-        </p>
-        <p>本页核对明确点位、缺失信息与时间先后。完成声称与巡查观察仍需人员复核。</p>
-        <button id="refresh-evidence" type="button" disabled>刷新证据核对</button>
+{% extends "layout.html" %}
+{% set active_nav = "plans" %}
+{% block title %}计划执行与检查记录核对 · 物业运营助手{% endblock %}
+{% block extra_styles %}
+<link rel="stylesheet" href="{{ url_for('static', path='/plan-pages.css') }}?v=material-types-1">
+{% endblock %}
+{% block content %}
+<div id="plan-evidence" class="plan-page" data-plan-id="{{ plan_id }}">
+    <nav class="breadcrumb" aria-label="当前位置"><a href="{{ url_for('plans_page') }}">工作计划</a> / 记录核对</nav>
+    <header class="page-heading">
+        <h1>计划执行与检查记录核对</h1>
+        <p id="evidence-current-plan"></p>
+        <p>按计划覆盖地点核对执行、现场检查记录，提示缺少的信息，并比较记录中的时间先后。</p>
+        <p class="muted">这是程序规则核对，不调用 AI；核对结果不能代替现场检查或完工验收。</p>
+        <div class="toolbar">
+            <a class="button-link" href="{{ url_for('executions_page') }}?plan_id={{ plan_id }}">查看执行记录</a>
+            <a class="button-link" href="{{ url_for('inspections_page') }}?plan_id={{ plan_id }}">查看现场检查</a>
+            <button id="refresh-evidence" class="primary-button" type="button" disabled>重新核对记录</button>
+        </div>
         <p id="evidence-message" role="status" aria-live="polite">尚未查询。</p>
+    </header>
 
-        <section id="evidence-result" hidden aria-labelledby="evidence-result-title">
-            <h2 id="evidence-result-title">本次核对结果</h2>
-            <dl id="evidence-summary"></dl>
-            <h3>各地点的明确记录</h3>
-            <p>有记录不等于已验收合格；点位未知的记录另行保留。</p>
-            <div style="overflow-x: auto;">
-                <table>
-                    <thead><tr><th>地点（当前台账）</th><th>执行记录</th><th>巡查记录</th></tr></thead>
+    <section id="evidence-result" hidden aria-labelledby="evidence-result-title">
+        <h2 id="evidence-result-title">本次记录核对结果</h2>
+        <section class="panel" aria-labelledby="evidence-findings-title">
+            <h3 id="evidence-findings-title">需要核实的信息</h3>
+            <p class="muted">未查到明确记录，不代表实际没有开展工作。</p>
+            <ul id="evidence-findings"></ul>
+        </section>
+        <section class="panel" aria-labelledby="evidence-coverage-title">
+            <h3 id="evidence-coverage-title">计划各地点有哪些记录</h3>
+            <p class="muted">按记录明确填写的地点统计；地点未知的记录保留在核对范围中，不计入具体地点。</p>
+            <div class="table-scroll" role="region" aria-label="各地点记录数量" tabindex="0">
+                <table class="records-table">
+                    <thead><tr><th>计划覆盖地点（当前台账）</th><th>执行记录</th><th>现场检查记录</th></tr></thead>
                     <tbody id="evidence-coverage"></tbody>
                 </table>
             </div>
-            <h3>待核实项</h3>
-            <ul id="evidence-findings"></ul>
-            <h3>巡查观察与声称完成时间的比较</h3>
-            <p>按同一点位的记录逐组比较；完成后发现异常仍需考虑再次产生等可能。</p>
-            <ul id="evidence-comparisons"></ul>
-            <details>
-                <summary>本次纳入的证据引用（含点位未知的记录）</summary>
-                <ul id="evidence-references"></ul>
-            </details>
         </section>
-        <noscript><p>请启用 JavaScript 后查询证据核对结果。</p></noscript>
-    </main>
-</body>
-</html>
+        <section class="panel" aria-labelledby="evidence-comparisons-title">
+            <h3 id="evidence-comparisons-title">现场观察与填报完成时间的先后</h3>
+            <p class="muted">只比较同一明确地点的观察时间与填报完成时间；时间先后本身不能证明处理效果或异常原因。</p>
+            <ul id="evidence-comparisons"></ul>
+        </section>
+        <details class="panel" id="evidence-source-details">
+            <summary>本次核对依据与原文</summary>
+            <p>计划要求说明安排做什么；执行填报说明工作人员填报做了什么；现场检查说明检查人在何时、何地观察到了什么。</p>
+            <p class="muted">计划负责人和覆盖地点描述工作安排；本次填报工作地点、现场观察地点在各自记录中单独列出。</p>
+            <p class="muted">点击正文中的依据可展开原文。原文按本次记录版本读取；版本不一致时提示重新核对，不展示新版内容。</p>
+            <div id="evidence-references"></div>
+        </details>
+        <details class="panel" id="evidence-run-details">
+            <summary>核对时间、记录编号与版本</summary>
+            <dl id="evidence-summary"></dl>
+
+        </details>
+    </section>
+
+    <noscript><p>请启用 JavaScript 后核对计划记录。</p></noscript>
+</div>
+{% endblock %}
+{% block sidebar %}
+<section class="panel">
+    <h2>怎样理解核对结果？</h2>
+    <p>执行记录说明工作人员填报做了什么；现场检查记录说明检查人在何时、何地观察到了什么。</p>
+    <p>程序按地点核对已有记录，并比较观察时间与填报完成时间。有记录不代表验收合格，缺记录也不代表没有开展工作。</p>
+    <p>核对结果供人员复核，不会自动结案。本页读取当前记录，重新核对会更新；已保存的 AI 结果保留其生成时的证据。</p>
+    <a href="{{ url_for('plans_page') }}">返回计划列表</a>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', path='/plan-evidence.js') }}?v=material-types-1" defer></script>
+{% endblock %}

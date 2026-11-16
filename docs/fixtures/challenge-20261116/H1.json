@@ -1,0 +1,547 @@
+{
+  "case_id": "H1",
+  "input": {
+    "report_ref": "report:838b5ff2-d5b7-5310-9f7b-4a3d1c6c895f",
+    "source_rule_version": "automatic-evidence-v1",
+    "checked_at": "2026-10-14T03:10:00Z",
+    "records": {
+      "report:838b5ff2-d5b7-5310-9f7b-4a3d1c6c895f": {
+        "service_category": "water_supply",
+        "description": "早上九点十分左右，我用卫生间洗手盆时，热水那边只有很小的一股水，冷水这边出水正常。家里其他龙头还没试，邻居家什么情况我也不清楚，麻烦来看看。",
+        "source": "phone",
+        "risk_status": "unknown",
+        "location_id": "LOC-A-B01-U01-R302",
+        "observed_at": "2026-10-14T01:10:00Z",
+        "id": "838b5ff2-d5b7-5310-9f7b-4a3d1c6c895f",
+        "received_at": "2026-10-14T03:00:00Z",
+        "version": 1,
+        "display_times_beijing": {
+          "observed_at": "2026-10-14 09:10:00（北京时间）",
+          "received_at": "2026-10-14 11:00:00（北京时间）"
+        },
+        "role": "selected_report"
+      },
+      "plan:d32d2bce-cd7f-55a7-a9b0-ba42d97223ac": {
+        "title": "302室卫生间洗手盆出水情况核查",
+        "service_category": "water_supply",
+        "plan_kind": "special",
+        "requirements": "核对302室卫生间洗手盆冷水侧和热水侧的出水情况，记录现场所见及实际检查范围。",
+        "owner_name": "陈浩",
+        "location_ids": [
+          "LOC-A-B01-U01-R302"
+        ],
+        "planned_start_at": "2026-10-14T01:30:00Z",
+        "planned_end_at": "2026-10-14T02:00:00Z",
+        "id": "d32d2bce-cd7f-55a7-a9b0-ba42d97223ac",
+        "created_at": "2026-10-14T00:10:00Z",
+        "version": 1,
+        "display_times_beijing": {
+          "planned_start_at": "2026-10-14 09:30:00（北京时间）",
+          "planned_end_at": "2026-10-14 10:00:00（北京时间）"
+        },
+        "role": "candidate_plan",
+        "discovery": {
+          "automatic": true,
+          "reason_codes": [
+            "plan_period",
+            "execution_record",
+            "inspection_record"
+          ],
+          "manual_link_ids": [],
+          "has_revoked_manual_link": false,
+          "category_matches": true,
+          "plan_location_matches": true,
+          "warnings": [
+            "计划为检索候选；是否对应居民所述问题，需要结合工作要求和原文分析。"
+          ]
+        },
+        "plan_checks": {
+          "rule_version": "plan-evidence-v1",
+          "plan_id": "d32d2bce-cd7f-55a7-a9b0-ba42d97223ac",
+          "plan_version": 1,
+          "checked_at": "2026-10-14T03:10:00Z",
+          "due": true,
+          "coverage": [
+            {
+              "location_id": "LOC-A-B01-U01-R302",
+              "execution_ids": [
+                "356cd794-047b-5b73-85ec-fbba234e3831"
+              ],
+              "inspection_ids": [
+                "49f7ecd4-8992-529b-a9b1-28581857dcd4"
+              ]
+            }
+          ],
+          "findings": [],
+          "comparisons": [
+            {
+              "location_id": "LOC-A-B01-U01-R302",
+              "execution_id": "356cd794-047b-5b73-85ec-fbba234e3831",
+              "inspection_id": "49f7ecd4-8992-529b-a9b1-28581857dcd4",
+              "finding": "no_issue_observed",
+              "relation": "after"
+            }
+          ],
+          "evidence": [
+            {
+              "kind": "plan",
+              "id": "d32d2bce-cd7f-55a7-a9b0-ba42d97223ac",
+              "version": 1
+            },
+            {
+              "kind": "execution",
+              "id": "356cd794-047b-5b73-85ec-fbba234e3831",
+              "version": 1
+            },
+            {
+              "kind": "inspection",
+              "id": "49f7ecd4-8992-529b-a9b1-28581857dcd4",
+              "version": 1
+            }
+          ]
+        },
+        "inspection_scope": {
+          "report_location_id": "LOC-A-B01-U01-R302",
+          "matched_inspection_count": 1,
+          "unknown_location_inspection_count": 0,
+          "background_inspection_count": 0,
+          "excluded_other_location_inspection_count": 0
+        }
+      },
+      "execution:356cd794-047b-5b73-85ec-fbba234e3831": {
+        "plan_id": "d32d2bce-cd7f-55a7-a9b0-ba42d97223ac",
+        "executor_name": "陈浩",
+        "description": "已到302室查看卫生间洗手盆，冷水侧打开后出水正常，随后关好龙头。",
+        "completion_claim": "completed",
+        "location_ids": [
+          "LOC-A-B01-U01-R302"
+        ],
+        "claimed_started_at": "2026-10-14T01:35:00Z",
+        "claimed_finished_at": "2026-10-14T01:45:00Z",
+        "id": "356cd794-047b-5b73-85ec-fbba234e3831",
+        "recorded_at": "2026-10-14T03:02:00Z",
+        "version": 1,
+        "display_times_beijing": {
+          "claimed_started_at": "2026-10-14 09:35:00（北京时间）",
+          "claimed_finished_at": "2026-10-14 09:45:00（北京时间）",
+          "recorded_at": "2026-10-14 11:02:00（北京时间）"
+        },
+        "plan_ref": "plan:d32d2bce-cd7f-55a7-a9b0-ba42d97223ac",
+        "location_relation": "same_location",
+        "report_comparison": {
+          "relation": "before",
+          "meaning": "居民观察相对于人员填报完成时间；仅时间比较，不代表已完成或已解决。"
+        }
+      },
+      "inspection:49f7ecd4-8992-529b-a9b1-28581857dcd4": {
+        "plan_id": "d32d2bce-cd7f-55a7-a9b0-ba42d97223ac",
+        "inspector_name": "许岚",
+        "description": "这次查看了卫生间洗手盆的冷水侧，打开后出水正常。热水侧本次没有核实。",
+        "finding": "no_issue_observed",
+        "location_id": "LOC-A-B01-U01-R302",
+        "observed_at": "2026-10-14T01:50:00Z",
+        "id": "49f7ecd4-8992-529b-a9b1-28581857dcd4",
+        "recorded_at": "2026-10-14T03:03:00Z",
+        "version": 1,
+        "display_times_beijing": {
+          "observed_at": "2026-10-14 09:50:00（北京时间）",
+          "recorded_at": "2026-10-14 11:03:00（北京时间）"
+        },
+        "plan_ref": "plan:d32d2bce-cd7f-55a7-a9b0-ba42d97223ac",
+        "location_relation": "same_location",
+        "observation_relation_to_report": "after"
+      },
+      "location:LOC-A": {
+        "id": "LOC-A",
+        "name": "A区",
+        "version": 1,
+        "kind": "area",
+        "parent_id": "LOC-DEMO-COMMUNITY",
+        "display_path": "合成小区 / A区"
+      },
+      "location:LOC-A-B01": {
+        "id": "LOC-A-B01",
+        "name": "1栋",
+        "version": 1,
+        "kind": "building",
+        "parent_id": "LOC-A",
+        "display_path": "合成小区 / A区 / 1栋"
+      },
+      "location:LOC-A-B01-U01": {
+        "id": "LOC-A-B01-U01",
+        "name": "1单元",
+        "version": 1,
+        "kind": "unit",
+        "parent_id": "LOC-A-B01",
+        "display_path": "合成小区 / A区 / 1栋 / 1单元"
+      },
+      "location:LOC-A-B01-U01-F03": {
+        "id": "LOC-A-B01-U01-F03",
+        "name": "3层",
+        "version": 1,
+        "kind": "floor",
+        "parent_id": "LOC-A-B01-U01",
+        "display_path": "合成小区 / A区 / 1栋 / 1单元 / 3层"
+      },
+      "location:LOC-A-B01-U01-R302": {
+        "id": "LOC-A-B01-U01-R302",
+        "name": "302室",
+        "version": 2,
+        "kind": "room",
+        "parent_id": "LOC-A-B01-U01-F03",
+        "display_path": "合成小区 / A区 / 1栋 / 1单元 / 3层 / 302室"
+      },
+      "location:LOC-DEMO-COMMUNITY": {
+        "id": "LOC-DEMO-COMMUNITY",
+        "name": "合成小区",
+        "version": 1,
+        "kind": "community",
+        "parent_id": null,
+        "display_path": "合成小区"
+      },
+      "search:assets": {
+        "source": "assets",
+        "status": "unsupported",
+        "scope": {},
+        "record_refs": [],
+        "count": null,
+        "error_code": null,
+        "note": "尚未接入设备台账或管网资料，不能确认共同设备及故障原因。"
+      },
+      "search:work_orders": {
+        "source": "work_orders",
+        "status": "unsupported",
+        "scope": {},
+        "record_refs": [],
+        "count": null,
+        "error_code": null,
+        "note": "尚未接入维修工单，不能说没有开展维修。"
+      },
+      "search:notices": {
+        "source": "notices",
+        "status": "unsupported",
+        "scope": {},
+        "record_refs": [],
+        "count": null,
+        "error_code": null,
+        "note": "尚未接入通知，不能说没有发布通知。"
+      },
+      "search:report": {
+        "source": "report",
+        "status": "found",
+        "scope": {
+          "report_id": "838b5ff2-d5b7-5310-9f7b-4a3d1c6c895f"
+        },
+        "record_refs": [
+          "report:838b5ff2-d5b7-5310-9f7b-4a3d1c6c895f"
+        ],
+        "count": 1,
+        "error_code": null,
+        "note": ""
+      },
+      "search:related_reports": {
+        "source": "related_reports",
+        "status": "empty",
+        "scope": {
+          "window_start": "2026-10-13T23:10:00+00:00",
+          "window_end": "2026-10-14T03:10:00+00:00",
+          "max_reports": 50,
+          "category": "water_supply",
+          "report_location_id": "LOC-A-B01-U01-R302",
+          "time_basis": "observed_at",
+          "policy_version": "related-reports-v1",
+          "location_scope": "same_building",
+          "building_id": "LOC-A-B01"
+        },
+        "record_refs": [],
+        "count": 0,
+        "error_code": null,
+        "note": "时间和地点相近仅表示线索，不代表同一故障或已经恢复。；本次不解析描述中的地址；未注明地点的其他报事不在地点匹配范围内。；仅搜索台账中的同一楼栋；未接入设备或管网资料，不能确认共同设备及跨楼栋关系。"
+      },
+      "search:plans": {
+        "source": "plans",
+        "status": "found",
+        "scope": {
+          "window_start": "2026-10-07T01:10:00+00:00",
+          "window_end": "2026-10-15T01:10:00+00:00",
+          "time_basis": "observed_at",
+          "report_location_id": "LOC-A-B01-U01-R302",
+          "category": "water_supply",
+          "max_candidates": 50,
+          "policy_version": "report-candidates-v1",
+          "location_rule": "exact_point_or_unknown_report_fallback",
+          "manual_supplements": "active_links_included_outside_automatic_window"
+        },
+        "record_refs": [
+          "plan:d32d2bce-cd7f-55a7-a9b0-ba42d97223ac"
+        ],
+        "count": 1,
+        "error_code": null,
+        "note": ""
+      },
+      "search:manual_links": {
+        "source": "manual_links",
+        "status": "empty",
+        "scope": {
+          "report_id": "838b5ff2-d5b7-5310-9f7b-4a3d1c6c895f",
+          "status": "active"
+        },
+        "record_refs": [],
+        "count": 0,
+        "error_code": null,
+        "note": ""
+      },
+      "search:plan_records:plan:d32d2bce-cd7f-55a7-a9b0-ba42d97223ac": {
+        "source": "plan_records",
+        "status": "found",
+        "scope": {
+          "plan_ref": "plan:d32d2bce-cd7f-55a7-a9b0-ba42d97223ac",
+          "record_scope": "all_saved_children_of_candidate_plan",
+          "max_total_child_records": 500
+        },
+        "record_refs": [
+          "execution:356cd794-047b-5b73-85ec-fbba234e3831",
+          "inspection:49f7ecd4-8992-529b-a9b1-28581857dcd4"
+        ],
+        "count": 2,
+        "error_code": null,
+        "note": ""
+      },
+      "search:locations": {
+        "source": "locations",
+        "status": "found",
+        "scope": {},
+        "record_refs": [
+          "location:LOC-A",
+          "location:LOC-A-B01",
+          "location:LOC-A-B01-U01",
+          "location:LOC-A-B01-U01-F03",
+          "location:LOC-A-B01-U01-R302",
+          "location:LOC-DEMO-COMMUNITY"
+        ],
+        "count": 6,
+        "error_code": null,
+        "note": "保存所用地点及上级台账的名称、层级、路径和版本。"
+      },
+      "context:investigation": {
+        "selected_report_ref": "report:838b5ff2-d5b7-5310-9f7b-4a3d1c6c895f",
+        "candidate_refs": [
+          "plan:d32d2bce-cd7f-55a7-a9b0-ba42d97223ac"
+        ],
+        "warnings": [
+          "时间和地点相近仅表示线索，不代表同一故障或已经恢复。",
+          "本次不解析描述中的地址；未注明地点的其他报事不在地点匹配范围内。",
+          "仅搜索台账中的同一楼栋；未接入设备或管网资料，不能确认共同设备及跨楼栋关系。",
+          "候选只表示值得进一步查看，不代表已确认相关或问题已解决。",
+          "没有查到记录不等于没有开展工作；候选不等于人工确认关联或已确认原因。",
+          "本次只读取现有数据，不建立关联、不结案、不发布通知。"
+        ],
+        "candidate_meaning": "自动发现的线索，尚未确认关联、同一事件、原因或解决。"
+      }
+    }
+  },
+  "input_sha256": "b1f5838f92f283399790cc8a7e2329025d870df050034bff63102c72dec8314a",
+  "preflight": {
+    "status": "passed",
+    "business_records": 4,
+    "expected_refs": [
+      "execution:356cd794-047b-5b73-85ec-fbba234e3831",
+      "inspection:49f7ecd4-8992-529b-a9b1-28581857dcd4",
+      "plan:d32d2bce-cd7f-55a7-a9b0-ba42d97223ac",
+      "report:838b5ff2-d5b7-5310-9f7b-4a3d1c6c895f"
+    ],
+    "coverage": {
+      "execution": 1,
+      "inspection": 1
+    },
+    "report_relation_to_completion": "before",
+    "observation_relation_to_report": "after",
+    "same_location": true,
+    "source_statuses": {
+      "assets": "unsupported",
+      "work_orders": "unsupported",
+      "notices": "unsupported",
+      "report": "found",
+      "related_reports": "empty",
+      "plans": "found",
+      "manual_links": "empty",
+      "plan_records": "found",
+      "locations": "found"
+    },
+    "business_data_unchanged": true,
+    "business_database_connected": false
+  },
+  "response_json_schema": {
+    "type": "object",
+    "required": [
+      "observations",
+      "verification_items",
+      "schema_version",
+      "candidate_assessments",
+      "uncertainties"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "observations": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "text",
+            "evidence_refs"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "text": {
+              "type": "string"
+            },
+            "evidence_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "report:838b5ff2-d5b7-5310-9f7b-4a3d1c6c895f",
+                  "plan:d32d2bce-cd7f-55a7-a9b0-ba42d97223ac",
+                  "execution:356cd794-047b-5b73-85ec-fbba234e3831",
+                  "inspection:49f7ecd4-8992-529b-a9b1-28581857dcd4",
+                  "location:LOC-A",
+                  "location:LOC-A-B01",
+                  "location:LOC-A-B01-U01",
+                  "location:LOC-A-B01-U01-F03",
+                  "location:LOC-A-B01-U01-R302",
+                  "location:LOC-DEMO-COMMUNITY",
+                  "search:assets",
+                  "search:work_orders",
+                  "search:notices",
+                  "search:report",
+                  "search:related_reports",
+                  "search:plans",
+                  "search:manual_links",
+                  "search:plan_records:plan:d32d2bce-cd7f-55a7-a9b0-ba42d97223ac",
+                  "search:locations",
+                  "context:investigation"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "verification_items": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "schema_version": {
+        "type": "string",
+        "enum": [
+          "automatic-suggestion-v1"
+        ]
+      },
+      "candidate_assessments": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "text",
+            "evidence_refs",
+            "candidate_ref",
+            "disposition"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "text": {
+              "type": "string"
+            },
+            "evidence_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "report:838b5ff2-d5b7-5310-9f7b-4a3d1c6c895f",
+                  "plan:d32d2bce-cd7f-55a7-a9b0-ba42d97223ac",
+                  "execution:356cd794-047b-5b73-85ec-fbba234e3831",
+                  "inspection:49f7ecd4-8992-529b-a9b1-28581857dcd4",
+                  "location:LOC-A",
+                  "location:LOC-A-B01",
+                  "location:LOC-A-B01-U01",
+                  "location:LOC-A-B01-U01-F03",
+                  "location:LOC-A-B01-U01-R302",
+                  "location:LOC-DEMO-COMMUNITY",
+                  "search:assets",
+                  "search:work_orders",
+                  "search:notices",
+                  "search:report",
+                  "search:related_reports",
+                  "search:plans",
+                  "search:manual_links",
+                  "search:plan_records:plan:d32d2bce-cd7f-55a7-a9b0-ba42d97223ac",
+                  "search:locations",
+                  "context:investigation"
+                ]
+              }
+            },
+            "candidate_ref": {
+              "type": "string",
+              "enum": [
+                "plan:d32d2bce-cd7f-55a7-a9b0-ba42d97223ac"
+              ]
+            },
+            "disposition": {
+              "type": "string",
+              "enum": [
+                "check_together",
+                "consider_separately",
+                "insufficient_information"
+              ]
+            }
+          }
+        }
+      },
+      "uncertainties": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "text",
+            "evidence_refs"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "text": {
+              "type": "string"
+            },
+            "evidence_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "report:838b5ff2-d5b7-5310-9f7b-4a3d1c6c895f",
+                  "plan:d32d2bce-cd7f-55a7-a9b0-ba42d97223ac",
+                  "execution:356cd794-047b-5b73-85ec-fbba234e3831",
+                  "inspection:49f7ecd4-8992-529b-a9b1-28581857dcd4",
+                  "location:LOC-A",
+                  "location:LOC-A-B01",
+                  "location:LOC-A-B01-U01",
+                  "location:LOC-A-B01-U01-F03",
+                  "location:LOC-A-B01-U01-R302",
+                  "location:LOC-DEMO-COMMUNITY",
+                  "search:assets",
+                  "search:work_orders",
+                  "search:notices",
+                  "search:report",
+                  "search:related_reports",
+                  "search:plans",
+                  "search:manual_links",
+                  "search:plan_records:plan:d32d2bce-cd7f-55a7-a9b0-ba42d97223ac",
+                  "search:locations",
+                  "context:investigation"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

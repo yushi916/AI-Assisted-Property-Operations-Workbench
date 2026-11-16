@@ -7,12 +7,16 @@ const newButton = document.querySelector("#execution-new");
 const reload = document.querySelector("#execution-reload-context");
 const message = document.querySelector("#execution-submit-message");
 const contextMessage = document.querySelector("#execution-context-message");
+const intakePanel = document.querySelector("#execution-intake-panel");
+const openForm = document.querySelector("#execution-open-form");
+const closeForm = document.querySelector("#execution-close-form");
 const claims = {
-    unknown: "完成情况待核实", completed: "声称已完成",
-    partially_completed: "声称部分完成", not_completed: "声称未完成",
+    unknown: "完成情况待核实", completed: "执行人员填报：已完成",
+    partially_completed: "执行人员填报：部分完成", not_completed: "执行人员填报：未完成",
 };
 let submission = null, busy = false, blocked = false, ready = false, loading = false;
 let names = new Map();
+let renderedPhase = null;
 
 function field(name) {
     return form.elements.namedItem(name);
@@ -27,10 +31,22 @@ function timeText(value) {
 }
 function locationText(ids) {
     return ids.length ? ids.map(id => (names.get(id) ?? id) + "（" + id + "）").join("、")
-        : "具体点位待核实";
+        : "具体地点待核实";
+}
+function setFormOpen(open, focus = false) {
+    intakePanel.hidden = !open;
+    openForm.setAttribute("aria-expanded", String(open));
+    if (open && focus) {
+        intakePanel.scrollIntoView?.({block: "start"});
+        field("executor_name").focus();
+    }
 }
 function render() {
     const phase = submission?.phase;
+    if (blocked || ["pending", "invalid", "conflict"].includes(phase)) setFormOpen(true);
+    if (phase === "accepted") setFormOpen(false);
+    openForm.disabled = blocked || busy || submission !== null;
+    closeForm.disabled = blocked || busy || submission !== null;
     const locked = ["pending", "accepted", "conflict"].includes(phase);
     fields.disabled = blocked || busy || !ready || locked;
     field("location_ids").disabled = field("scope_mode").value !== "known";
@@ -43,6 +59,7 @@ function render() {
     document.querySelector("#execution-request-id").textContent = submission?.payload.request_id ?? "";
     document.querySelector("#execution-retry-note").hidden = phase !== "pending";
     document.querySelector("#execution-receipt").hidden = phase !== "accepted";
+    document.querySelector("#execution-view-saved").hidden = phase !== "accepted";
     if (phase === "accepted") {
         const saved = submission.receipt;
         document.querySelector("#execution-receipt-content").textContent = [
@@ -50,14 +67,19 @@ function render() {
             "计划编号：" + saved.plan_id,
             "执行人：" + saved.executor_name,
             "完成情况：" + claims[saved.completion_claim],
-            "具体点位（当前台账）：" + locationText(saved.location_ids),
-            "声称开始时间（北京时间）：" + timeText(saved.claimed_started_at),
-            "声称完成时间（北京时间）：" + timeText(saved.claimed_finished_at),
+            "具体地点（当前台账）：" + locationText(saved.location_ids),
+            "工作开始时间（北京时间）：" + timeText(saved.claimed_started_at),
+            "工作完成时间（北京时间）：" + timeText(saved.claimed_finished_at),
             "录入时间（北京时间）：" + timeText(saved.recorded_at),
             "已保存的原始描述：",
             saved.description,
         ].join("\n");
+        if (renderedPhase !== "accepted") {
+            message.scrollIntoView?.({block: "start"});
+            message.focus();
+        }
     }
+    renderedPhase = phase;
 }
 function remember(next) {
     sessionStorage.setItem(storageKey, JSON.stringify(next));
@@ -128,7 +150,7 @@ async function loadContext() {
         });
         field("location_ids").replaceChildren(...options);
         ready = true;
-        contextMessage.textContent = "点位选项来自当前计划；名称加载失败时显示地点编号。未知点位不会自动扩成整个计划。";
+        contextMessage.textContent = "地点选项来自当前计划；名称加载失败时显示地点编号。未知地点不会自动扩成整个计划。";
     } catch {
         contextMessage.textContent = "计划范围未能读取，请重新加载；已有待确认提交仍可原样重试。";
     } finally {
@@ -156,6 +178,15 @@ try {
     message.textContent = "本页提交记录无法读取，暂不能提交。请先核对已有执行记录及浏览器存储设置。";
 }
 field("scope_mode").addEventListener("change", render);
+openForm.addEventListener("click", () => {
+    if (!openForm.disabled) setFormOpen(true, true);
+});
+closeForm.addEventListener("click", () => {
+    if (!closeForm.disabled) {
+        setFormOpen(false);
+        openForm.focus();
+    }
+});
 reload.addEventListener("click", loadContext);
 form.addEventListener("submit", async event => {
     event.preventDefault();
@@ -165,7 +196,7 @@ form.addEventListener("submit", async event => {
             if (!ready || !form.reportValidity()) return;
             const ids = field("scope_mode").value === "known" ? selectedIds() : [];
             if (field("scope_mode").value === "known" && !ids.length) {
-                message.textContent = "请选择至少一个明确点位；无法确认时，请选择“具体点位待核实”。";
+                message.textContent = "请选择至少一个明确地点；无法确认时，请选择“具体地点待核实”。";
                 return;
             }
             const timeValue = name => field(name).value ? field(name).value + "+08:00" : null;
@@ -198,7 +229,7 @@ form.addEventListener("submit", async event => {
         if ([200, 201].includes(response.status)) {
             if (!validReceipt(body, submission.payload)) throw new Error("回执不匹配");
             remember({ ...submission, phase: "accepted", receipt: body,
-                message: "执行记录已保存，尚未核实。可点击“刷新查询”查看记录。" });
+                message: "执行记录已保存，仍需核实。点击“查看已保存记录”刷新列表，或录入下一条。" });
         } else if (response.status === 422) {
             const detail = typeof body.detail === "string" ? body.detail
                 : Array.isArray(body.detail) ? body.detail.map(item => item.msg).join("；")
@@ -231,7 +262,8 @@ newButton.addEventListener("click", () => {
     form.reset();
     message.textContent = "可以录入下一条执行记录。";
     render();
-    field("executor_name").focus();
+    setFormOpen(true, true);
 });
+setFormOpen(false);
 render();
 loadContext();

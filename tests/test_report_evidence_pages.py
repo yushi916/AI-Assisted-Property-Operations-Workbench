@@ -76,5 +76,77 @@ class ReportEvidencePageTests(unittest.TestCase):
         self.assertIn("disabled", parser.elements["link-action-fields"])
         self.assertIn("report-link-actions.js", parser.scripts[0]["src"])
 
+    def test_shared_layout_serves_styles_and_keeps_the_reading_order(self):
+        with TestClient(app) as client:
+            page = client.get("/report-evidence", params={"report_id": REPORT_ID})
+            self.assertEqual(page.status_code, 200)
+            self.assertIn("/static/workbench.css?v=execution-layout-1", page.text)
+            self.assertEqual(client.get("/static/workbench.css").status_code, 200)
+        anchors = [
+            'id="report-summary-title"', 'id="agent-runs-title"',
+            'id="joint-plans-title"', 'id="link-action-title"',
+        ]
+        positions = [page.text.index(anchor) for anchor in anchors]
+        self.assertEqual(positions, sorted(positions))
+        self.assertIn('aria-label="工作导航"', page.text)
+
+
+    def test_ai_entry_precedes_optional_manual_tools_and_all_five_results_are_present(self):
+        with TestClient(app) as client:
+            page = client.get("/report-evidence", params={"report_id": REPORT_ID})
+        parser = PageParser()
+        parser.feed(page.text)
+        self.assertIn("无需先选择工作计划", page.text)
+        self.assertIn("AI辅助核查", page.text)
+        self.assertIn("可选", page.text)
+        self.assertLess(page.text.index('id="agent-runs-title"'), page.text.index('id="manual-plan-tools"'))
+        for id_ in ("agent-run-records", "agent-run-observations", "agent-run-assessments",
+                    "agent-run-uncertainties", "agent-run-verification", "agent-run-scope",
+                    "agent-run-history", "agent-query-details"):
+            self.assertIn(id_, parser.elements)
+        self.assertNotIn("open", parser.elements["manual-plan-tools"])
+        self.assertIn("未找到记录不等于没有开展工作", page.text)
+
+    def test_ai_renderer_and_scoped_styles_are_served_with_current_script_version(self):
+        with TestClient(app) as client:
+            page = client.get("/report-evidence", params={"report_id": REPORT_ID})
+            self.assertIn("report-agent-runs.js?v=agent-readability-1", page.text)
+            self.assertIn("agent-check.css?v=agent-readability-1", page.text)
+            for path in ("/static/agent-check.css", "/static/agent-run-view.js"):
+                self.assertEqual(client.get(path).status_code, 200)
+            script = client.get("/static/report-agent-runs.js").text
+        self.assertNotIn("watchEvidence", script)
+        self.assertNotIn("evidenceReady", script)
+        self.assertIn("agent-run-view.js?v=agent-readability-1", script)
+
+    def test_analysis_precedes_originals_and_supplements_are_collapsed_without_hiding_failure_controls(self):
+        with TestClient(app) as client:
+            page = client.get("/report-evidence", params={"report_id": REPORT_ID})
+        parser = PageParser()
+        parser.feed(page.text)
+        ids = ["agent-run-summary", "agent-assessments-title", "agent-uncertainties-title",
+               "agent-verification-title", "agent-original-details", "agent-fact-details",
+               "agent-query-details", "agent-runtime-details"]
+        positions = [page.text.index(f'id="{name}"') for name in ids]
+        self.assertEqual(positions, sorted(positions))
+        for name in ("agent-original-details", "agent-fact-details", "agent-query-details", "agent-runtime-details"):
+            self.assertNotIn("open", parser.elements[name])
+        self.assertIn("hidden", parser.elements["agent-fact-details"])
+        self.assertNotIn("hidden", parser.elements["agent-run-message"])
+        self.assertIn('id="agent-run-meta"', page.text.split('id="agent-runtime-details"', 1)[1].split('</details>', 1)[0])
+        self.assertIn('id="agent-run-records"', page.text.split('id="agent-original-details"', 1)[1].split('</details>', 1)[0])
+        for text in ("本次核查依据", "事实摘要", "初步判断", "待核实信息", "建议核查事项", "运行详情"):
+            self.assertIn(text, page.text)
+        self.assertEqual(page.text.count("不会自动建立关联、结案或发布通知"), 1)
+        self.assertEqual(page.text.count("尚不支持正式审核"), 1)
+
+    def test_optional_manual_form_keeps_one_copy_of_each_control(self):
+        with TestClient(app) as client:
+            page = client.get("/report-evidence", params={"report_id": REPORT_ID})
+        for id_ in ("report-evidence-result", "link-action-form", "generate-agent-run", "joint-plans", "agent-run-result"):
+            self.assertEqual(page.text.count(f'id="{id_}"'), 1)
+        self.assertIn("AI核查无需先操作这里", page.text)
+
+
 if __name__ == "__main__":
     unittest.main()

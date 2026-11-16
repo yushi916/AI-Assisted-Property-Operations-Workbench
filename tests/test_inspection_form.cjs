@@ -33,6 +33,7 @@ async function page({storage = new Map(), post, failContext = false, failWrite =
     fields.scope_mode.value = "unknown";
 
     const nodes = new Map();
+    nodes.set("#inspection-intake-panel", Object.assign(new Element(), {open: false}));
     const form = new Element();
     form.elements = { namedItem: name => fields[name] };
     form.reportValidity = () => true;
@@ -125,8 +126,43 @@ test("unknown point and time stay null; raw text is preserved", async () => {
     assert.equal(p.posts[0].plan_id, planId);
     assert.equal(p.saved().phase, "accepted");
     assert.ok(p.node("receipt-content").textContent.endsWith(p.posts[0].description));
-    assert.match(p.node("receipt-content").textContent, /具体点位待核实/);
+    assert.match(p.node("receipt-content").textContent, /具体地点待核实/);
     assert.equal(p.node("receipt-content").children.length, 0);
+});
+
+test("report context returns to the same report and never changes the plan payload", async () => {
+    const id = "09cece20-85a5-460b-a916-eba61d2809a7";
+    const p = await page({query: "?plan_id=" + planId + "&report_id=" + id});
+    assert.equal(p.node("return-report").hidden, false);
+    assert.equal(p.node("return-report").href, "/report-evidence?report_id=" + id);
+    fill(p); await p.submit();
+    assert.equal(p.posts[0].plan_id, planId);
+    assert.equal(p.posts[0].location_id, null);
+    assert.equal(Object.hasOwn(p.posts[0], "report_id"), false);
+    for (const suffix of ["", "&report_id=javascript:bad", "&report_id=not-a-uuid"]) {
+        const standalone = await page({query: "?plan_id=" + planId + suffix});
+        assert.equal(standalone.node("return-report").hidden, true);
+        assert.equal(standalone.node("return-report").href, undefined);
+    }
+});
+
+test("opening intake does not submit; restored pending and saved receipts are expanded", async () => {
+    const storage = new Map();
+    const p = await page({storage, post: () => {throw Error("lost response");}});
+    assert.notEqual(p.node("intake-panel").open, true);
+    await p.node("open-form").emit("click");
+    assert.equal(p.node("intake-panel").open, true);
+    assert.equal(p.posts.length, 0);
+    fill(p); await p.submit();
+    const savedPayload = p.posts[0];
+    const restored = await page({storage});
+    assert.equal(restored.node("intake-panel").open, true);
+    await restored.submit();
+    assert.deepEqual(restored.posts[0], savedPayload);
+    const accepted = await page({storage});
+    assert.equal(accepted.node("intake-panel").open, true);
+    assert.equal(accepted.node("receipt").hidden, false);
+    assert.equal(accepted.posts.length, 0);
 });
 
 test("only explicit A point is sent; no B or unrelated point", async () => {
@@ -151,7 +187,7 @@ test("known mode without a selected point sends nothing", async () => {
     await p.submit();
     assert.equal(p.posts.length, 0);
     assert.equal(p.storage.size, 0);
-    assert.match(p.node("submit-message").textContent, /一个明确点位/);
+    assert.match(p.node("submit-message").textContent, /一个明确地点/);
 });
 
 test("422 permits edits and preserves submission id", async () => {

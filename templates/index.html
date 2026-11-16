@@ -1,166 +1,97 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ page_title }}</title>
-
-    <style>
-        [hidden] {
-            display: none !important;
-        }
-
-        body {
-            max-width: 760px;
-            margin: 32px auto;
-            padding: 0 20px;
-            font-family: sans-serif;
-            line-height: 1.7;
-        }
-
-        fieldset {
-            border: 1px solid #ccc;
-            padding: 20px;
-        }
-
-        label {
-            display: block;
-            margin: 14px 0;
-        }
-
-        select, textarea, input {
-            display: block;
-            box-sizing: border-box;
-            width: 100%;
-            padding: 8px;
-            font: inherit;
-        }
-
-        button {
-            margin: 16px 8px 0 0;
-            padding: 8px 16px;
-            font: inherit;
-        }
-
-        pre {
-            white-space: pre-wrap;
-            overflow-wrap: anywhere;
-            font: inherit;
-        }
-
-        code, dd {
-            overflow-wrap: anywhere;
-        }
-
-        #message {
-            min-height: 2em;
-        }
-    </style>
-
-    <script src="{{ url_for('static', path='/location-picker.js') }}?v=floor-picker-2" defer></script>
-    <script src="{{ url_for('static', path='/reports.js') }}?v=floor-picker-2" defer></script>
-</head>
-
-<body>
-    <main>
-        <h1>{{ page_title }}</h1>
-
-        <p>合成数据演示 · 当前提供报事受理，证据研判与人工审核尚未接入。</p>
-        <p><a href="{{ url_for('reports_page') }}">查看已保存报事</a></p>
-        <p><a href="{{ url_for('plans_page') }}">录入物业计划</a></p>
-
-        <h2>录入居民报事</h2>
-        <p>逐级查找地点后，点击“确认使用此地点”；没有合适点位时选择“地点待核实”，并在原始描述中写清位置。</p>
-
+{% extends "layout.html" %}
+{% set active_nav = "reports" %}
+{% block title %}录入居民报事 · 物业运营助手{% endblock %}
+{% block extra_styles %}<link rel="stylesheet" href="{{ url_for('static', path='/report-pages.css') }}?v=report-entry-1">{% endblock %}
+{% block content %}
+<div class="report-page">
+    <nav class="breadcrumb" aria-label="当前位置"><a href="{{ url_for('reports_page') }}">报事列表</a> / 录入报事</nav>
+    <header class="page-heading">
+        <h1>录入居民报事</h1>
+        <p class="muted">保留居民原话，填写已知地点和观察时间；保存后可进入详情与核查。</p>
+    </header>
+    <section class="panel" aria-label="报事录入表单">
+        <p>地点确认后从台账选择；没有合适地点时选“待核实”，并在原始描述中写清位置。</p>
         <form id="report-form">
             <fieldset id="report-fields">
                 <legend>报事内容</legend>
 
-                <label>服务类别
+                <p><label>服务类别
                     <select name="service_category" required>
                         <option value="">请选择</option>
                         <option value="cleaning">环境保洁</option>
                         <option value="water_supply">供水</option>
                         <option value="other">其他事项</option>
                     </select>
-                </label>
-
+                </label></p>
                 <div id="location-picker" hidden></div>
-
-                <label>发生地点
+                <p><label>发生地点
                     <select name="location_id" disabled>
                         <option value="">地点待核实</option>
                     </select>
-                </label>
+                </label></p>
+                <p id="location-message" role="status">正在加载地点台账…</p>
+                <p><label>居民原始描述
+                    <textarea name="description" rows="5" maxlength="2000" required></textarea>
+                </label></p>
 
-                <p id="location-message" role="status">
-                    正在加载地点台账…
-                </p>
-
-                <label>居民原始描述
-                    <textarea
-                        name="description"
-                        rows="5"
-                        maxlength="2000"
-                        required
-                    ></textarea>
-                </label>
-
-                <label>观察时间（北京时间，可留空）
+                <p><label>观察时间（北京时间，可留空）
                     <input name="observed_at" type="datetime-local">
-                </label>
-
+                </label></p>
                 <p>填写居民实际观察到问题的时间；不确定时留空，不用录入时间代替。</p>
 
-                <label>人员声明的风险情况
+                <p><label>人员声明的风险情况
                     <select name="risk_status" required>
                         <option value="">请选择</option>
                         <option value="unknown">信息不足，风险待核实</option>
                         <option value="no_immediate_risk_reported">未报告即时风险</option>
                         <option value="urgent">已报告紧急风险</option>
                     </select>
-                </label>
-
+                </label></p>
                 <p>此项记录人员声明。紧急情况仍需按物业应急流程联系值班人员。</p>
             </fieldset>
 
-            <button id="send-button" type="submit" disabled>
-                提交报事
-            </button>
-
-            <button id="new-button" type="button" hidden>
-                录入下一条报事
-            </button>
+            <div class="toolbar"><button class="primary-button" id="send-button" type="submit" disabled>提交报事</button>
+            <button id="new-button" type="button" hidden>录入下一条报事</button></div>
         </form>
 
         <p id="message" role="status" aria-live="polite"></p>
-
         <p id="retry-note" hidden>
             提交结果未确认时，请保留当前标签页；本页暂存支持刷新后继续重试。
         </p>
-
         <p id="submission-reference" hidden>
             本次提交编号：<code id="request-id"></code>
         </p>
 
-        <section id="receipt" hidden aria-labelledby="receipt-title">
+        <section id="receipt" class="receipt-panel" hidden aria-labelledby="receipt-title">
             <h2 id="receipt-title">保存回执</h2>
-
             <dl>
-                <dt>报事编号</dt>
-                <dd id="report-id"></dd>
-
-                <dt>接收时间（北京时间）</dt>
-                <dd id="received-at"></dd>
+                <dt>报事编号</dt><dd id="report-id"></dd>
+                <dt>接收时间（北京时间）</dt><dd id="received-at"></dd>
             </dl>
-
+            <p><a id="view-saved-report" class="button-link" hidden>查看详情与核查</a></p>
             <h3>已保存的原始描述</h3>
             <pre id="saved-description"></pre>
         </section>
 
-        <noscript>
-            <p>请启用 JavaScript 后使用报事表单。</p>
-        </noscript>
-    </main>
-</body>
-</html>
+        <noscript><p>请启用 JavaScript 后使用报事表单。</p></noscript>
+    </section>
+</div>
+{% endblock %}
+{% block sidebar %}
+<section class="panel">
+    <h2>工作入口</h2>
+    <nav class="sidebar-links" aria-label="快捷入口">
+        <a href="{{ url_for('reports_page') }}">查看报事列表</a>
+        <a href="{{ url_for('plans_page') }}">录入或查看工作计划</a>
+    </nav>
+</section>
+<section class="panel">
+    <h2>填写提示</h2>
+    <p>地点、时间不清楚时保留待核实。保存后可用AI辅助核查自动查找已有记录，无需先选择计划。</p>
+    <p class="muted">虚构案例演示。AI建议仍需人员复核，正式审核操作尚未接入。</p>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', path='/location-picker.js') }}?v=page-copy-1" defer></script>
+<script src="{{ url_for('static', path='/reports.js') }}?v=report-entry-1" defer></script>
+{% endblock %}

@@ -1,0 +1,217 @@
+[
+  {
+    "id": "c4a3541a-7e00-48e8-bc1d-3413701b31df",
+    "report_id": "4526d8f4-6a08-4000-9b06-d808f2e347a8",
+    "status": "pending_review",
+    "model_name": "gemini-3.5-flash-lite",
+    "created_at": "2026-11-16T12:07:06.488384Z",
+    "finished_at": "2026-11-16T12:07:09.015888Z",
+    "evidence": {
+      "report_ref": "report:4526d8f4-6a08-4000-9b06-d808f2e347a8",
+      "source_rule_version": "automatic-evidence-v1",
+      "checked_at": "2026-11-16T12:07:06.498360Z",
+      "records": {
+        "report:4526d8f4-6a08-4000-9b06-d808f2e347a8": {
+          "service_category": "other",
+          "description": "\t大堂便民信息栏上的物业联系电话有些字看不清，麻烦核对一下。",
+          "source": "web",
+          "risk_status": "unknown",
+          "location_id": "LOC-A-LOBBY",
+          "observed_at": null,
+          "id": "4526d8f4-6a08-4000-9b06-d808f2e347a8",
+          "received_at": "2026-11-16T06:24:28.562122Z",
+          "version": 1,
+          "display_times_beijing": {
+            "observed_at": null,
+            "received_at": "2026-11-16 14:24:28（北京时间）"
+          },
+          "role": "selected_report"
+        },
+        "location:LOC-A": {
+          "id": "LOC-A",
+          "name": "A区",
+          "version": 1,
+          "kind": "area",
+          "parent_id": "LOC-DEMO-COMMUNITY",
+          "display_path": "合成小区 / A区"
+        },
+        "location:LOC-A-LOBBY": {
+          "id": "LOC-A-LOBBY",
+          "name": "A区大堂",
+          "version": 2,
+          "kind": "public_space",
+          "parent_id": "LOC-A",
+          "display_path": "合成小区 / A区 / A区大堂"
+        },
+        "location:LOC-DEMO-COMMUNITY": {
+          "id": "LOC-DEMO-COMMUNITY",
+          "name": "合成小区",
+          "version": 1,
+          "kind": "community",
+          "parent_id": null,
+          "display_path": "合成小区"
+        },
+        "search:assets": {
+          "source": "assets",
+          "status": "unsupported",
+          "scope": {},
+          "record_refs": [],
+          "count": null,
+          "error_code": null,
+          "note": "尚未接入设备台账或管网资料，不能确认共同设备及故障原因。"
+        },
+        "search:work_orders": {
+          "source": "work_orders",
+          "status": "unsupported",
+          "scope": {},
+          "record_refs": [],
+          "count": null,
+          "error_code": null,
+          "note": "尚未接入维修工单，不能说没有开展维修。"
+        },
+        "search:notices": {
+          "source": "notices",
+          "status": "unsupported",
+          "scope": {},
+          "record_refs": [],
+          "count": null,
+          "error_code": null,
+          "note": "尚未接入通知，不能说没有发布通知。"
+        },
+        "search:report": {
+          "source": "report",
+          "status": "found",
+          "scope": {
+            "report_id": "4526d8f4-6a08-4000-9b06-d808f2e347a8"
+          },
+          "record_refs": [
+            "report:4526d8f4-6a08-4000-9b06-d808f2e347a8"
+          ],
+          "count": 1,
+          "error_code": null,
+          "note": ""
+        },
+        "search:related_reports": {
+          "source": "related_reports",
+          "status": "empty",
+          "scope": {
+            "window_start": "2026-11-16T04:24:28.562122+00:00",
+            "window_end": "2026-11-16T08:24:28.562122+00:00",
+            "max_reports": 50,
+            "category": "other",
+            "report_location_id": "LOC-A-LOBBY",
+            "time_basis": "received_at_search_only",
+            "policy_version": "related-reports-v1",
+            "location_scope": "same_location",
+            "building_id": null
+          },
+          "record_refs": [],
+          "count": 0,
+          "error_code": null,
+          "note": "时间和地点相近仅表示线索，不代表同一故障或已经恢复。；本次不解析描述中的地址；未注明地点的其他报事不在地点匹配范围内。；起始报事观察时间未注明；接收时间仅用于检索，实际先后未知。；本次仅匹配同一台账地点；未扩大到同区域其他点位。"
+        },
+        "search:plans": {
+          "source": "plans",
+          "status": "empty",
+          "scope": {
+            "window_start": "2026-11-09T06:24:28.562122+00:00",
+            "window_end": "2026-11-17T06:24:28.562122+00:00",
+            "time_basis": "received_at_search_only",
+            "report_location_id": "LOC-A-LOBBY",
+            "category": "other",
+            "max_candidates": 50,
+            "policy_version": "report-candidates-v1",
+            "location_rule": "exact_point_or_unknown_report_fallback",
+            "manual_supplements": "active_links_included_outside_automatic_window"
+          },
+          "record_refs": [],
+          "count": 0,
+          "error_code": null,
+          "note": ""
+        },
+        "search:manual_links": {
+          "source": "manual_links",
+          "status": "empty",
+          "scope": {
+            "report_id": "4526d8f4-6a08-4000-9b06-d808f2e347a8",
+            "status": "active"
+          },
+          "record_refs": [],
+          "count": 0,
+          "error_code": null,
+          "note": ""
+        },
+        "search:plan_records": {
+          "source": "plan_records",
+          "status": "not_queried",
+          "scope": {},
+          "record_refs": [],
+          "count": null,
+          "error_code": null,
+          "note": "没有候选计划，未读取计划所属执行和检查；其他报事查询仍独立完成。"
+        },
+        "search:locations": {
+          "source": "locations",
+          "status": "found",
+          "scope": {},
+          "record_refs": [
+            "location:LOC-A",
+            "location:LOC-A-LOBBY",
+            "location:LOC-DEMO-COMMUNITY"
+          ],
+          "count": 3,
+          "error_code": null,
+          "note": "保存所用地点及上级台账的名称、层级、路径和版本。"
+        },
+        "context:investigation": {
+          "selected_report_ref": "report:4526d8f4-6a08-4000-9b06-d808f2e347a8",
+          "candidate_refs": [],
+          "warnings": [
+            "时间和地点相近仅表示线索，不代表同一故障或已经恢复。",
+            "本次不解析描述中的地址；未注明地点的其他报事不在地点匹配范围内。",
+            "起始报事观察时间未注明；接收时间仅用于检索，实际先后未知。",
+            "本次仅匹配同一台账地点；未扩大到同区域其他点位。",
+            "候选只表示值得进一步查看，不代表已确认相关或问题已解决。",
+            "观察时间未注明：接收时间仅作为检索参考，不能用于判断事情发生的先后。",
+            "没有查到记录不等于没有开展工作；候选不等于人工确认关联或已确认原因。",
+            "本次只读取现有数据，不建立关联、不结案、不发布通知。"
+          ],
+          "candidate_meaning": "自动发现的线索，尚未确认关联、同一事件、原因或解决。"
+        }
+      }
+    },
+    "suggestion": {
+      "observations": [
+        {
+          "text": "居民报事称A区大堂便民信息栏上的物业联系电话有些字看不清，麻烦核对一下。",
+          "evidence_refs": [
+            "report:4526d8f4-6a08-4000-9b06-d808f2e347a8"
+          ]
+        },
+        {
+          "text": "系统接收到该报事的时间为2026-11-16 14:24:28（北京时间），观察时间未知。",
+          "evidence_refs": [
+            "report:4526d8f4-6a08-4000-9b06-d808f2e347a8"
+          ]
+        }
+      ],
+      "verification_items": [
+        "请前往合成小区 / A区 / A区大堂的便民信息栏现场核对物业联系电话的字迹清晰度。"
+      ],
+      "schema_version": "automatic-suggestion-v1",
+      "candidate_assessments": [],
+      "uncertainties": [
+        {
+          "text": "起始报事观察时间未注明，且没有查询到相关候选计划或历史工单记录，无法确认当前信息栏字迹实际状态及此前是否有过处理。",
+          "evidence_refs": [
+            "report:4526d8f4-6a08-4000-9b06-d808f2e347a8",
+            "search:related_reports",
+            "search:plans"
+          ]
+        }
+      ]
+    },
+    "failure_stage": null,
+    "error_code": null
+  }
+]

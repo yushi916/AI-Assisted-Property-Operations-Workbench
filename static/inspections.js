@@ -1,4 +1,12 @@
 const planId = new URLSearchParams(window.location.search).get("plan_id")?.toLowerCase();
+const returnReportId = new URLSearchParams(window.location.search).get("report_id");
+const back = document.querySelector("#inspection-return-report");
+back.hidden = true;
+if (typeof returnReportId === "string"
+    && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(returnReportId)) {
+    back.href = "/report-evidence?report_id=" + encodeURIComponent(returnReportId);
+    back.hidden = false;
+}
 const storageKey = "property-v2-inspection-intake-v1:" + planId;
 const form = document.querySelector("#inspection-form");
 const fields = document.querySelector("#inspection-form-fields");
@@ -7,8 +15,13 @@ const newButton = document.querySelector("#inspection-new");
 const reload = document.querySelector("#inspection-reload-context");
 const message = document.querySelector("#inspection-submit-message");
 const contextMessage = document.querySelector("#inspection-context-message");
+document.querySelector("#inspection-open-form").addEventListener("click", () => {
+    const panel = document.querySelector("#inspection-intake-panel");
+    panel.open = true;
+    panel.scrollIntoView?.({block: "start"});
+});
 const findings = {
-    unable_to_verify: "无法核实", no_issue_observed: "未见异常", issue_observed: "发现异常",
+    unable_to_verify: "无法核实", no_issue_observed: "未发现异常", issue_observed: "发现异常",
 };
 let submission = null, busy = false, blocked = false, ready = false, loading = false;
 let names = new Map();
@@ -22,17 +35,19 @@ function timeText(value) {
     }) : "待核实";
 }
 function locationText(id) {
-    if (id === null) return "具体点位待核实";
+    if (id === null) return "具体地点待核实";
     return names.has(id) ? names.get(id) + "（" + id + "）" : id + "（地点名称暂未取得）";
 }
 function render() {
     const phase = submission?.phase;
+    // Restored submissions and their errors/receipts must remain visible.
+    if (submission || busy || blocked) document.querySelector("#inspection-intake-panel").open = true;
     const locked = ["pending", "accepted", "conflict"].includes(phase);
     fields.disabled = blocked || busy || !ready || locked;
     field("location_id").disabled = field("scope_mode").value !== "known";
     send.disabled = blocked || busy || ["accepted", "conflict"].includes(phase)
         || (!ready && phase !== "pending");
-    send.textContent = busy ? "正在保存…" : phase === "pending" ? "原样重试本次提交" : "保存巡查记录";
+    send.textContent = busy ? "正在保存…" : phase === "pending" ? "原样重试本次提交" : "保存现场检查记录";
     reload.disabled = loading;
     newButton.hidden = phase !== "accepted";
     document.querySelector("#inspection-submit-reference").hidden = !submission;
@@ -42,12 +57,12 @@ function render() {
     if (phase === "accepted") {
         const saved = submission.receipt;
         document.querySelector("#inspection-receipt-content").textContent = [
-            "巡查记录编号：" + saved.id,
+            "现场检查记录编号：" + saved.id,
             "提交编号：" + saved.request_id,
             "计划编号：" + saved.plan_id,
-            "巡查人：" + saved.inspector_name,
-            "巡查观察：" + findings[saved.finding],
-            "具体点位（当前台账）：" + locationText(saved.location_id),
+            "现场检查人：" + saved.inspector_name,
+            "现场检查观察：" + findings[saved.finding],
+            "具体地点（当前台账）：" + locationText(saved.location_id),
             "观察时间（北京时间）：" + timeText(saved.observed_at),
             "录入时间（北京时间）：" + timeText(saved.recorded_at),
             "已保存的原始描述：",
@@ -97,7 +112,7 @@ async function getJSON(url) {
 }
 async function loadContext() {
     if (!planId) {
-        contextMessage.textContent = "请从计划列表的“查看巡查记录”进入，才能录入巡查。";
+        contextMessage.textContent = "请从计划列表的“查看现场检查记录”进入，才能录入现场检查。";
         return;
     }
     if (loading) return;
@@ -119,7 +134,7 @@ async function loadContext() {
             .map(item => [item.id, item.display_path]));
         const placeholder = document.createElement("option");
         placeholder.value = "";
-        placeholder.textContent = "请选择一个明确点位";
+        placeholder.textContent = "请选择一个明确地点";
         const options = plan.location_ids.map(id => {
             const option = document.createElement("option");
             option.value = id;
@@ -129,7 +144,7 @@ async function loadContext() {
         field("location_id").replaceChildren(placeholder, ...options);
         field("location_id").value = plan.location_ids.includes(previous) ? previous : "";
         ready = true;
-        contextMessage.textContent = "明确点位只从本计划中单选；不同点位请分别记录。未知地点和时间可留待核实。";
+        contextMessage.textContent = "明确地点只从本计划中单选；不同地点请分别记录。未知地点和时间可留待核实。";
     } catch {
         contextMessage.textContent = "计划范围未能读取，请重新加载；已有待确认提交仍可原样重试。";
     } finally {
@@ -154,7 +169,7 @@ try {
     }
 } catch {
     blocked = true;
-    message.textContent = "本页提交记录无法读取，暂不能提交。请先核对已有巡查记录及浏览器存储设置。";
+    message.textContent = "本页提交记录无法读取，暂不能提交。请先核对已有现场检查记录及浏览器存储设置。";
 }
 field("scope_mode").addEventListener("change", render);
 reload.addEventListener("click", loadContext);
@@ -166,7 +181,7 @@ form.addEventListener("submit", async event => {
             if (!ready || !form.reportValidity()) return;
             const id = field("scope_mode").value === "known" ? field("location_id").value : null;
             if (field("scope_mode").value === "known" && !id) {
-                message.textContent = "请选择一个明确点位；无法确认时，请选择“具体点位待核实”。";
+                message.textContent = "请选择一个明确地点；无法确认时，请选择“具体地点待核实”。";
                 return;
             }
             const observed = field("observed_at").value;
@@ -198,7 +213,7 @@ form.addEventListener("submit", async event => {
         if ([200, 201].includes(response.status)) {
             if (!validReceipt(body, submission.payload)) throw new Error("回执不匹配");
             remember({...submission, phase: "accepted", receipt: body,
-                message: "巡查记录已保存，尚未作履约判断。可点击“刷新查询”查看记录。"});
+                message: "现场检查记录已保存，是否完成仍需结合其他记录核实。可点击“刷新记录”查看记录。"});
         } else if (response.status === 422) {
             const detail = typeof body.detail === "string" ? body.detail
                 : Array.isArray(body.detail) ? body.detail.map(item => item.msg).join("；")
@@ -229,7 +244,7 @@ newButton.addEventListener("click", () => {
     }
     submission = null;
     form.reset();
-    message.textContent = "可以录入下一条巡查记录。";
+    message.textContent = "可以录入下一条现场检查记录。";
     render();
     field("inspector_name").focus();
 });

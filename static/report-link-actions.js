@@ -1,4 +1,4 @@
-import {watchEvidence} from "./report-evidence.js?v=link-actions-v1";
+import {watchEvidence} from "./report-evidence.js?v=auto-check-1";
 
 const reportId = document.querySelector("#report-evidence").dataset.reportId;
 const form = document.querySelector("#link-action-form");
@@ -37,22 +37,25 @@ function render() {
     document.querySelector("#action-link-choice").hidden = kind !== "revoke";
     send.disabled = blocked || busy || ["accepted", "conflict"].includes(phase)
         || (phase !== "pending" && (!snapshot || (kind === "link" && !catalogReady)));
-    send.textContent = busy ? "正在保存…" : phase === "pending" ? "原样重试本次操作" : "保存本次操作";
+    send.textContent = busy ? "正在保存…" : phase === "pending" ? "重试保存" : kind === "link" ? "保存选择" : "确认移除";
+    document.querySelector("#action-reason-label").textContent = kind === "link" ? "选择理由" : "移除理由";
+    document.querySelector("#remove-plan-note").hidden = kind !== "revoke";
     startNew.hidden = !["invalid", "accepted", "conflict"].includes(phase);
-    startNew.textContent = phase === "invalid" ? "放弃未保存输入，开始新操作" : "核对当前记录后开始新操作";
+    startNew.textContent = phase === "invalid" ? "放弃输入，重新开始" : "开始新操作";
     startNew.disabled = blocked || busy || !snapshot;
+    document.querySelector("#new-link-action-note").hidden = startNew.hidden;
     reloadPlans.disabled = blocked || busy || catalogBusy;
     document.querySelector("#link-action-reference").hidden = !draft;
     document.querySelector("#link-action-request-id").textContent = draft?.payload.request_id ?? "";
     document.querySelector("#link-action-retry-note").hidden = phase !== "pending";
     const receipt = document.querySelector("#link-action-receipt");
     receipt.hidden = phase !== "accepted";
-    if (phase === "accepted") receipt.textContent = `报事编号（report_id）：${draft.receipt.report_id}\n关联编号（id）：${draft.receipt.id}\n本次操作提交编号：${draft.payload.request_id}\n回执状态（后续变化见关联历史）：${draft.receipt.status === "active" ? "有效关联" : "已撤销"}\n回执版本：${draft.receipt.version}`;
+    if (phase === "accepted") receipt.textContent = `报事编号（report_id）：${draft.receipt.report_id}\n操作记录编号（id）：${draft.receipt.id}\n本次操作提交编号：${draft.payload.request_id}\n回执中的状态（当前情况见上方记录）：${draft.receipt.status === "active" ? "已添加" : "已移除"}\n回执版本：${draft.receipt.version}`;
     const plan = plans.get(field("plan_id").value);
     const link = snapshot?.links.find(x => x.id === field("link_id").value);
     document.querySelector("#action-target").textContent = kind === "link"
-        ? plan ? `计划：${plan.title}\n明确地点：${plan.location_ids.map(id => locationNames?.has(id) ? `${locationNames.get(id)}（${id}）` : id).join("、")}\n计划要求：${plan.requirements}` : "请选择计划，提交时程序将核对类别和明确地点。"
-        : link ? `关联编号：${link.id}\n计划编号：${link.plan_id}\n当前版本：${link.version}\n原关联理由：${link.reason}` : "请选择当前有效关联。";
+        ? plan ? `计划：${plan.title}\n明确地点：${plan.location_ids.map(id => locationNames?.has(id) ? `${locationNames.get(id)}（${id}）` : id).join("、")}\n计划要求：${plan.requirements}` : "请选择工作计划，保存时会核对服务类别和地点。"
+        : link ? `操作记录编号：${link.id}\n计划编号：${link.plan_id}\n当前版本：${link.version}\n选择理由：${link.reason}` : "请选择要从本条报事中移除的计划。";
 }
 
 function remember(next) {
@@ -111,7 +114,7 @@ async function loadPlans() {
             `${x.title}｜${({cleaning: "保洁", water_supply: "供水", other: "其他"})[x.service_category] ?? x.service_category}｜${new Date(x.planned_start_at).toLocaleString("zh-CN", {timeZone: "Asia/Shanghai", hour12: false})}`]), field("plan_id").value);
         catalogReady = plans.size > 0;
         updateLinks();
-        notice.textContent = catalogReady ? "请选择具体计划；关联表示共同核查，不代表同一原因。" : "暂无计划，请先在计划页面录入。";
+        notice.textContent = catalogReady ? "选择计划后，请填写姓名和理由，再点击“保存选择”。" : "暂无工作计划，请先点击上方“录入工作计划”。";
     } catch {
         notice.textContent = "计划列表加载未完成，请重新加载；已保留的待确认操作仍可原样重试。";
     } finally {
@@ -141,7 +144,7 @@ try {
 
 function updateLinks() {
     if (snapshot) choices(field("link_id"), snapshot.links.filter(x => x.status === "active")
-        .map(x => [x.id, `${plans.get(x.plan_id)?.title ?? "计划 " + x.plan_id}｜关联编号 ${x.id}｜版本 ${x.version}`]), field("link_id").value);
+        .map(x => [x.id, `${plans.get(x.plan_id)?.title ?? "计划 " + x.plan_id}｜操作记录编号 ${x.id}｜版本 ${x.version}`]), field("link_id").value);
 }
 
 watchEvidence((data, names) => {
@@ -190,7 +193,7 @@ form.addEventListener("submit", async event => {
         const body = await response.json();
         if (response.status === 200 || (attempt.kind === "link" && response.status === 201)) {
             if (!matchesReceipt(body, attempt)) throw Error("回执与操作不匹配");
-            remember({...attempt, phase: "accepted", receipt: body, message: "操作已确认，请核对回执和当前关联历史。"});
+            remember({...attempt, phase: "accepted", receipt: body, message: "操作结果已确认，请查看上方最新记录和保存回执。"});
             snapshot = null;
             window.location.reload();
         } else if (response.status === 422) {
@@ -199,7 +202,7 @@ form.addEventListener("submit", async event => {
             remember({...attempt, phase: "invalid", message: detail});
             if (snapshot) document.querySelector("#report-evidence-result").hidden = false;
         } else if (response.status === 409) {
-            remember({...attempt, phase: "conflict", message: "操作发生冲突；请先核对刷新后的关联记录，再决定是否开始新操作。"});
+            remember({...attempt, phase: "conflict", message: "记录已发生变化，本次操作未保存。请查看上方最新记录，再点击“开始新操作”。"});
             snapshot = null;
             window.location.reload();
         } else throw Error("尚未收到匹配回执");
@@ -218,7 +221,7 @@ startNew.addEventListener("click", () => {
     catch { message.textContent = "无法结束当前操作，请核对浏览器存储设置。"; return; }
     draft = null;
     form.reset();
-    message.textContent = "可以开始下一次操作。";
+    message.textContent = "表单已清空，可以开始新操作。";
     render();
 });
 reloadPlans.addEventListener("click", loadPlans);

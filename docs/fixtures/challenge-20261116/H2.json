@@ -1,0 +1,511 @@
+{
+  "case_id": "H2",
+  "input": {
+    "report_ref": "report:9ab15aff-93a1-50eb-a5cd-5139f6883a4c",
+    "source_rule_version": "automatic-evidence-v1",
+    "checked_at": "2026-10-15T03:10:00Z",
+    "records": {
+      "report:9ab15aff-93a1-50eb-a5cd-5139f6883a4c": {
+        "service_category": "cleaning",
+        "description": "九点十分经过大堂电梯前，地上有一摊像饮料留下的污渍，踩着有些发黏，麻烦来清理一下。什么时候弄上的、是谁弄的，我都不知道。",
+        "source": "phone",
+        "risk_status": "unknown",
+        "location_id": "LOC-A-LOBBY",
+        "observed_at": "2026-10-15T01:10:00Z",
+        "id": "9ab15aff-93a1-50eb-a5cd-5139f6883a4c",
+        "received_at": "2026-10-15T03:00:00Z",
+        "version": 1,
+        "display_times_beijing": {
+          "observed_at": "2026-10-15 09:10:00（北京时间）",
+          "received_at": "2026-10-15 11:00:00（北京时间）"
+        },
+        "role": "selected_report"
+      },
+      "plan:79033257-266f-5ec2-a727-c348dccdaeef": {
+        "title": "A区大堂入口至电梯前地面清洁",
+        "service_category": "cleaning",
+        "plan_kind": "routine",
+        "requirements": "清理大堂入口至电梯前地面的垃圾、污渍及水迹，清洁后确认通行情况。",
+        "owner_name": "周宁",
+        "location_ids": [
+          "LOC-A-LOBBY"
+        ],
+        "planned_start_at": "2026-10-15T00:30:00Z",
+        "planned_end_at": "2026-10-15T01:00:00Z",
+        "id": "79033257-266f-5ec2-a727-c348dccdaeef",
+        "created_at": "2026-10-15T00:10:00Z",
+        "version": 1,
+        "display_times_beijing": {
+          "planned_start_at": "2026-10-15 08:30:00（北京时间）",
+          "planned_end_at": "2026-10-15 09:00:00（北京时间）"
+        },
+        "role": "candidate_plan",
+        "discovery": {
+          "automatic": true,
+          "reason_codes": [
+            "plan_period",
+            "execution_record",
+            "inspection_record"
+          ],
+          "manual_link_ids": [],
+          "has_revoked_manual_link": false,
+          "category_matches": true,
+          "plan_location_matches": true,
+          "warnings": [
+            "计划为检索候选；是否对应居民所述问题，需要结合工作要求和原文分析。"
+          ]
+        },
+        "plan_checks": {
+          "rule_version": "plan-evidence-v1",
+          "plan_id": "79033257-266f-5ec2-a727-c348dccdaeef",
+          "plan_version": 1,
+          "checked_at": "2026-10-15T03:10:00Z",
+          "due": true,
+          "coverage": [
+            {
+              "location_id": "LOC-A-LOBBY",
+              "execution_ids": [
+                "fdf28cb1-bacd-5509-b804-150bdfcd795b"
+              ],
+              "inspection_ids": [
+                "62e356c5-7694-5097-ab87-c5d82fa31db5"
+              ]
+            }
+          ],
+          "findings": [],
+          "comparisons": [
+            {
+              "location_id": "LOC-A-LOBBY",
+              "execution_id": "fdf28cb1-bacd-5509-b804-150bdfcd795b",
+              "inspection_id": "62e356c5-7694-5097-ab87-c5d82fa31db5",
+              "finding": "no_issue_observed",
+              "relation": "after"
+            }
+          ],
+          "evidence": [
+            {
+              "kind": "plan",
+              "id": "79033257-266f-5ec2-a727-c348dccdaeef",
+              "version": 1
+            },
+            {
+              "kind": "execution",
+              "id": "fdf28cb1-bacd-5509-b804-150bdfcd795b",
+              "version": 1
+            },
+            {
+              "kind": "inspection",
+              "id": "62e356c5-7694-5097-ab87-c5d82fa31db5",
+              "version": 1
+            }
+          ]
+        },
+        "inspection_scope": {
+          "report_location_id": "LOC-A-LOBBY",
+          "matched_inspection_count": 1,
+          "unknown_location_inspection_count": 0,
+          "background_inspection_count": 0,
+          "excluded_other_location_inspection_count": 0
+        }
+      },
+      "execution:fdf28cb1-bacd-5509-b804-150bdfcd795b": {
+        "plan_id": "79033257-266f-5ec2-a727-c348dccdaeef",
+        "executor_name": "林悦",
+        "description": "入口到电梯前的地面已经清洁，地上可见的垃圾和污渍已清理，随后收回了清洁工具。",
+        "completion_claim": "completed",
+        "location_ids": [
+          "LOC-A-LOBBY"
+        ],
+        "claimed_started_at": "2026-10-15T00:35:00Z",
+        "claimed_finished_at": "2026-10-15T00:55:00Z",
+        "id": "fdf28cb1-bacd-5509-b804-150bdfcd795b",
+        "recorded_at": "2026-10-15T03:02:00Z",
+        "version": 1,
+        "display_times_beijing": {
+          "claimed_started_at": "2026-10-15 08:35:00（北京时间）",
+          "claimed_finished_at": "2026-10-15 08:55:00（北京时间）",
+          "recorded_at": "2026-10-15 11:02:00（北京时间）"
+        },
+        "plan_ref": "plan:79033257-266f-5ec2-a727-c348dccdaeef",
+        "location_relation": "same_location",
+        "report_comparison": {
+          "relation": "after",
+          "meaning": "居民观察相对于人员填报完成时间；仅时间比较，不代表已完成或已解决。"
+        }
+      },
+      "inspection:62e356c5-7694-5097-ab87-c5d82fa31db5": {
+        "plan_id": "79033257-266f-5ec2-a727-c348dccdaeef",
+        "inspector_name": "周宁",
+        "description": "本次只查看了入口地垫周边，地面干燥，没有看见明显污渍。电梯前的区域这次没有查看。",
+        "finding": "no_issue_observed",
+        "location_id": "LOC-A-LOBBY",
+        "observed_at": "2026-10-15T01:25:00Z",
+        "id": "62e356c5-7694-5097-ab87-c5d82fa31db5",
+        "recorded_at": "2026-10-15T03:03:00Z",
+        "version": 1,
+        "display_times_beijing": {
+          "observed_at": "2026-10-15 09:25:00（北京时间）",
+          "recorded_at": "2026-10-15 11:03:00（北京时间）"
+        },
+        "plan_ref": "plan:79033257-266f-5ec2-a727-c348dccdaeef",
+        "location_relation": "same_location",
+        "observation_relation_to_report": "after"
+      },
+      "location:LOC-A": {
+        "id": "LOC-A",
+        "name": "A区",
+        "version": 1,
+        "kind": "area",
+        "parent_id": "LOC-DEMO-COMMUNITY",
+        "display_path": "合成小区 / A区"
+      },
+      "location:LOC-A-LOBBY": {
+        "id": "LOC-A-LOBBY",
+        "name": "A区大堂",
+        "version": 1,
+        "kind": "public_space",
+        "parent_id": "LOC-A",
+        "display_path": "合成小区 / A区 / A区大堂"
+      },
+      "location:LOC-DEMO-COMMUNITY": {
+        "id": "LOC-DEMO-COMMUNITY",
+        "name": "合成小区",
+        "version": 1,
+        "kind": "community",
+        "parent_id": null,
+        "display_path": "合成小区"
+      },
+      "search:assets": {
+        "source": "assets",
+        "status": "unsupported",
+        "scope": {},
+        "record_refs": [],
+        "count": null,
+        "error_code": null,
+        "note": "尚未接入设备台账或管网资料，不能确认共同设备及故障原因。"
+      },
+      "search:work_orders": {
+        "source": "work_orders",
+        "status": "unsupported",
+        "scope": {},
+        "record_refs": [],
+        "count": null,
+        "error_code": null,
+        "note": "尚未接入维修工单，不能说没有开展维修。"
+      },
+      "search:notices": {
+        "source": "notices",
+        "status": "unsupported",
+        "scope": {},
+        "record_refs": [],
+        "count": null,
+        "error_code": null,
+        "note": "尚未接入通知，不能说没有发布通知。"
+      },
+      "search:report": {
+        "source": "report",
+        "status": "found",
+        "scope": {
+          "report_id": "9ab15aff-93a1-50eb-a5cd-5139f6883a4c"
+        },
+        "record_refs": [
+          "report:9ab15aff-93a1-50eb-a5cd-5139f6883a4c"
+        ],
+        "count": 1,
+        "error_code": null,
+        "note": ""
+      },
+      "search:related_reports": {
+        "source": "related_reports",
+        "status": "empty",
+        "scope": {
+          "window_start": "2026-10-14T23:10:00+00:00",
+          "window_end": "2026-10-15T03:10:00+00:00",
+          "max_reports": 50,
+          "category": "cleaning",
+          "report_location_id": "LOC-A-LOBBY",
+          "time_basis": "observed_at",
+          "policy_version": "related-reports-v1",
+          "location_scope": "same_location",
+          "building_id": null
+        },
+        "record_refs": [],
+        "count": 0,
+        "error_code": null,
+        "note": "时间和地点相近仅表示线索，不代表同一故障或已经恢复。；本次不解析描述中的地址；未注明地点的其他报事不在地点匹配范围内。；本次仅匹配同一台账地点；未扩大到同区域其他点位。"
+      },
+      "search:plans": {
+        "source": "plans",
+        "status": "found",
+        "scope": {
+          "window_start": "2026-10-08T01:10:00+00:00",
+          "window_end": "2026-10-16T01:10:00+00:00",
+          "time_basis": "observed_at",
+          "report_location_id": "LOC-A-LOBBY",
+          "category": "cleaning",
+          "max_candidates": 50,
+          "policy_version": "report-candidates-v1",
+          "location_rule": "exact_point_or_unknown_report_fallback",
+          "manual_supplements": "active_links_included_outside_automatic_window"
+        },
+        "record_refs": [
+          "plan:79033257-266f-5ec2-a727-c348dccdaeef"
+        ],
+        "count": 1,
+        "error_code": null,
+        "note": ""
+      },
+      "search:manual_links": {
+        "source": "manual_links",
+        "status": "empty",
+        "scope": {
+          "report_id": "9ab15aff-93a1-50eb-a5cd-5139f6883a4c",
+          "status": "active"
+        },
+        "record_refs": [],
+        "count": 0,
+        "error_code": null,
+        "note": ""
+      },
+      "search:plan_records:plan:79033257-266f-5ec2-a727-c348dccdaeef": {
+        "source": "plan_records",
+        "status": "found",
+        "scope": {
+          "plan_ref": "plan:79033257-266f-5ec2-a727-c348dccdaeef",
+          "record_scope": "all_saved_children_of_candidate_plan",
+          "max_total_child_records": 500
+        },
+        "record_refs": [
+          "execution:fdf28cb1-bacd-5509-b804-150bdfcd795b",
+          "inspection:62e356c5-7694-5097-ab87-c5d82fa31db5"
+        ],
+        "count": 2,
+        "error_code": null,
+        "note": ""
+      },
+      "search:locations": {
+        "source": "locations",
+        "status": "found",
+        "scope": {},
+        "record_refs": [
+          "location:LOC-A",
+          "location:LOC-A-LOBBY",
+          "location:LOC-DEMO-COMMUNITY"
+        ],
+        "count": 3,
+        "error_code": null,
+        "note": "保存所用地点及上级台账的名称、层级、路径和版本。"
+      },
+      "context:investigation": {
+        "selected_report_ref": "report:9ab15aff-93a1-50eb-a5cd-5139f6883a4c",
+        "candidate_refs": [
+          "plan:79033257-266f-5ec2-a727-c348dccdaeef"
+        ],
+        "warnings": [
+          "时间和地点相近仅表示线索，不代表同一故障或已经恢复。",
+          "本次不解析描述中的地址；未注明地点的其他报事不在地点匹配范围内。",
+          "本次仅匹配同一台账地点；未扩大到同区域其他点位。",
+          "候选只表示值得进一步查看，不代表已确认相关或问题已解决。",
+          "没有查到记录不等于没有开展工作；候选不等于人工确认关联或已确认原因。",
+          "本次只读取现有数据，不建立关联、不结案、不发布通知。"
+        ],
+        "candidate_meaning": "自动发现的线索，尚未确认关联、同一事件、原因或解决。"
+      }
+    }
+  },
+  "input_sha256": "1c7fe065f426799a845607fb6dbc3d457860c762a5ac05252d207a71143a9b1d",
+  "preflight": {
+    "status": "passed",
+    "business_records": 4,
+    "expected_refs": [
+      "execution:fdf28cb1-bacd-5509-b804-150bdfcd795b",
+      "inspection:62e356c5-7694-5097-ab87-c5d82fa31db5",
+      "plan:79033257-266f-5ec2-a727-c348dccdaeef",
+      "report:9ab15aff-93a1-50eb-a5cd-5139f6883a4c"
+    ],
+    "coverage": {
+      "execution": 1,
+      "inspection": 1
+    },
+    "report_relation_to_completion": "after",
+    "observation_relation_to_report": "after",
+    "same_location": true,
+    "source_statuses": {
+      "assets": "unsupported",
+      "work_orders": "unsupported",
+      "notices": "unsupported",
+      "report": "found",
+      "related_reports": "empty",
+      "plans": "found",
+      "manual_links": "empty",
+      "plan_records": "found",
+      "locations": "found"
+    },
+    "business_data_unchanged": true,
+    "business_database_connected": false
+  },
+  "response_json_schema": {
+    "type": "object",
+    "required": [
+      "observations",
+      "verification_items",
+      "schema_version",
+      "candidate_assessments",
+      "uncertainties"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "observations": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "text",
+            "evidence_refs"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "text": {
+              "type": "string"
+            },
+            "evidence_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "report:9ab15aff-93a1-50eb-a5cd-5139f6883a4c",
+                  "plan:79033257-266f-5ec2-a727-c348dccdaeef",
+                  "execution:fdf28cb1-bacd-5509-b804-150bdfcd795b",
+                  "inspection:62e356c5-7694-5097-ab87-c5d82fa31db5",
+                  "location:LOC-A",
+                  "location:LOC-A-LOBBY",
+                  "location:LOC-DEMO-COMMUNITY",
+                  "search:assets",
+                  "search:work_orders",
+                  "search:notices",
+                  "search:report",
+                  "search:related_reports",
+                  "search:plans",
+                  "search:manual_links",
+                  "search:plan_records:plan:79033257-266f-5ec2-a727-c348dccdaeef",
+                  "search:locations",
+                  "context:investigation"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "verification_items": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "schema_version": {
+        "type": "string",
+        "enum": [
+          "automatic-suggestion-v1"
+        ]
+      },
+      "candidate_assessments": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "text",
+            "evidence_refs",
+            "candidate_ref",
+            "disposition"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "text": {
+              "type": "string"
+            },
+            "evidence_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "report:9ab15aff-93a1-50eb-a5cd-5139f6883a4c",
+                  "plan:79033257-266f-5ec2-a727-c348dccdaeef",
+                  "execution:fdf28cb1-bacd-5509-b804-150bdfcd795b",
+                  "inspection:62e356c5-7694-5097-ab87-c5d82fa31db5",
+                  "location:LOC-A",
+                  "location:LOC-A-LOBBY",
+                  "location:LOC-DEMO-COMMUNITY",
+                  "search:assets",
+                  "search:work_orders",
+                  "search:notices",
+                  "search:report",
+                  "search:related_reports",
+                  "search:plans",
+                  "search:manual_links",
+                  "search:plan_records:plan:79033257-266f-5ec2-a727-c348dccdaeef",
+                  "search:locations",
+                  "context:investigation"
+                ]
+              }
+            },
+            "candidate_ref": {
+              "type": "string",
+              "enum": [
+                "plan:79033257-266f-5ec2-a727-c348dccdaeef"
+              ]
+            },
+            "disposition": {
+              "type": "string",
+              "enum": [
+                "check_together",
+                "consider_separately",
+                "insufficient_information"
+              ]
+            }
+          }
+        }
+      },
+      "uncertainties": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "text",
+            "evidence_refs"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "text": {
+              "type": "string"
+            },
+            "evidence_refs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "report:9ab15aff-93a1-50eb-a5cd-5139f6883a4c",
+                  "plan:79033257-266f-5ec2-a727-c348dccdaeef",
+                  "execution:fdf28cb1-bacd-5509-b804-150bdfcd795b",
+                  "inspection:62e356c5-7694-5097-ab87-c5d82fa31db5",
+                  "location:LOC-A",
+                  "location:LOC-A-LOBBY",
+                  "location:LOC-DEMO-COMMUNITY",
+                  "search:assets",
+                  "search:work_orders",
+                  "search:notices",
+                  "search:report",
+                  "search:related_reports",
+                  "search:plans",
+                  "search:manual_links",
+                  "search:plan_records:plan:79033257-266f-5ec2-a727-c348dccdaeef",
+                  "search:locations",
+                  "context:investigation"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

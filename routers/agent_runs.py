@@ -8,12 +8,12 @@ from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
-from agent_evidence import AgentEvidence, AgentSuggestion, build_agent_evidence
+from agent_evidence import AgentEvidence, AgentSuggestion, AutomaticSuggestion
 from agent_runner import EvidenceModel, FailureStage, run_agent
 from database import get_db
-from models import AgentRun, ServiceRequest, utc_now
-from routers.report_evidence import read_report_evidence
 from gemini_agent import GeminiEvidenceModel
+from models import AgentRun, ServiceRequest, utc_now
+from automatic_agent_evidence import read_automatic_agent_evidence
 
 
 router = APIRouter(prefix="/api/service-requests", tags=["evidence-agent"])
@@ -35,7 +35,7 @@ class AgentRunRead(BaseModel):
     created_at: AwareDatetime
     finished_at: AwareDatetime | None
     evidence: AgentEvidence | None
-    suggestion: AgentSuggestion | None
+    suggestion: AutomaticSuggestion | AgentSuggestion | None
     failure_stage: FailureStage | None
     error_code: str | None
 
@@ -71,7 +71,7 @@ def create_agent_run(
                 return AgentRunRead.model_validate(row)
 
         # 在模型调用期间不持有数据库事务。取证工具自行打开并关闭读取事务。
-        result = run_agent(model, lambda: build_agent_evidence(read_report_evidence(report_id, db)))
+        result = run_agent(model, lambda: read_automatic_agent_evidence(db, report_id))
         with db.begin():
             row.status = result.status
             row.finished_at = utc_now()

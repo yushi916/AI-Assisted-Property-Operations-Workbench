@@ -20,7 +20,8 @@ class Element {
     replaceChildren(...items) { this.children = items; }
     addEventListener(type, handler) { this.handlers[type] = handler; }
     async emit(type) { return this.handlers[type]?.({ preventDefault() {} }); }
-    focus() {}
+    focus() { this.focused = true; }
+    setAttribute(name, value) { this[name] = value; }
 }
 
 async function page({storage = new Map(), post, failContext = false, failWrite = false,
@@ -126,7 +127,7 @@ test("unknown stays [] and null; raw text is preserved", async () => {
     assert.equal(p.posts[0].plan_id, planId);
     assert.equal(p.saved().phase, "accepted");
     assert.ok(p.node("receipt-content").textContent.endsWith(p.posts[0].description));
-    assert.match(p.node("receipt-content").textContent, /具体点位待核实/);
+    assert.match(p.node("receipt-content").textContent, /具体地点待核实/);
     assert.equal(p.node("receipt-content").children.length, 0);
 });
 
@@ -311,4 +312,59 @@ test("catalog failure still permits explicit plan points by id", async () => {
     await p.submit();
     assert.deepEqual(p.posts[0].location_ids, ["LOC-B-LOBBY"]);
     assert.equal(p.saved().phase, "accepted");
+});
+
+test("new execution form starts collapsed and opening it sends nothing", async () => {
+    const p = await page();
+    assert.equal(p.node("intake-panel").hidden, true);
+    assert.equal(p.node("open-form").disabled, false);
+    await p.node("open-form").emit("click");
+    assert.equal(p.node("intake-panel").hidden, false);
+    assert.equal(p.node("open-form")["aria-expanded"], "true");
+    assert.equal(p.fields.executor_name.focused, true);
+    assert.equal(p.posts.length, 0);
+    assert.equal(p.storage.size, 0);
+});
+
+test("collapsing a fresh form preserves input and does not create a submission", async () => {
+    const p = await page();
+    await p.node("open-form").emit("click");
+    fill(p, "尚未提交的原始说明");
+    await p.node("close-form").emit("click");
+    assert.equal(p.node("intake-panel").hidden, true);
+    await p.node("open-form").emit("click");
+    assert.equal(p.fields.description.value, "尚未提交的原始说明");
+    assert.equal(p.posts.length, 0);
+});
+
+test("failed context loading leaves the form and reload control reachable without enabling save", async () => {
+    const p = await page({failContext: true});
+    assert.equal(p.node("open-form").disabled, false);
+    await p.node("open-form").emit("click");
+    assert.equal(p.node("intake-panel").hidden, false);
+    assert.equal(p.node("reload-context").disabled, false);
+    assert.equal(p.node("send").disabled, true);
+    const before = p.calls.length;
+    await p.node("reload-context").emit("click");
+    assert.ok(p.calls.length > before);
+    assert.equal(p.posts.length, 0);
+});
+
+test("pending restore cannot hide retry and accepted save leaves receipt visible", async () => {
+    const p = await page({post: () => { throw new TypeError("lost response"); }});
+    await p.node("open-form").emit("click"); fill(p); await p.submit();
+    const requestId = p.posts[0].request_id;
+    const q = await page({storage: p.storage, failContext: true});
+    assert.equal(q.node("intake-panel").hidden, false);
+    assert.equal(q.node("close-form").disabled, true);
+    await q.node("close-form").emit("click");
+    assert.equal(q.node("intake-panel").hidden, false);
+    await q.submit();
+    assert.equal(q.posts[0].request_id, requestId);
+    assert.equal(q.node("intake-panel").hidden, true);
+    assert.equal(q.node("receipt").hidden, false);
+    assert.equal(q.node("view-saved").hidden, false);
+    await q.node("new").emit("click");
+    assert.equal(q.node("intake-panel").hidden, false);
+    assert.equal(q.node("view-saved").hidden, true);
 });

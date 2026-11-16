@@ -70,9 +70,9 @@ async function openPlan(id) {
             ["提交编号", plan.request_id],
             ["计划标题", plan.title],
             ["服务类别", categories[plan.service_category] ?? plan.service_category],
-            ["计划种类", kinds[plan.plan_kind] ?? plan.plan_kind],
+            ["计划类型", kinds[plan.plan_kind] ?? plan.plan_kind],
             ["负责人", plan.owner_name],
-            ["覆盖地点（当前台账）", places],
+            ["计划覆盖地点（当前台账）", places],
             ["开始时间（北京时间）", timeText(plan.planned_start_at)],
             ["结束时间（北京时间）", timeText(plan.planned_end_at)],
             ["创建时间（北京时间）", timeText(plan.created_at)],
@@ -89,7 +89,7 @@ async function openPlan(id) {
         }
         document.querySelector("#plan-detail-requirements").textContent = plan.requirements;
         detail.hidden = false;
-        detailMessage.textContent = "已读取保存的计划，可从列表查看执行和巡查记录。";
+        detailMessage.textContent = "已读取保存的计划，可从列表查看执行和现场检查记录。";
         document.querySelector("#plan-detail-title").focus();
     } catch (error) {
         if (sequence !== detailSequence) return;
@@ -121,23 +121,26 @@ async function loadPlans(targetOffset) {
                 row.append(cell);
             }
             const action = document.createElement("td");
+            const actions = document.createElement("div");
+            actions.className = "plan-actions";
             const button = document.createElement("button");
             button.type = "button";
-            button.textContent = "查看详情";
+            button.textContent = "计划详情";
             button.addEventListener("click", () => openPlan(plan.id));
             const executionLink = document.createElement("a");
             executionLink.href = "/executions?plan_id=" + encodeURIComponent(plan.id);
-            executionLink.textContent = "查看执行记录";
-            executionLink.style.marginLeft = "8px";
+            executionLink.textContent = "执行记录";
+            executionLink.className = "button-link";
             const inspectionLink = document.createElement("a");
             inspectionLink.href = "/inspections?plan_id=" + encodeURIComponent(plan.id);
-            inspectionLink.textContent = "查看巡查记录";
-            inspectionLink.style.marginLeft = "8px";
+            inspectionLink.textContent = "现场检查";
+            inspectionLink.className = "button-link";
             const evidenceLink = document.createElement("a");
             evidenceLink.href = "/plan-evidence?plan_id=" + encodeURIComponent(plan.id);
-            evidenceLink.textContent = "证据核对";
-            evidenceLink.style.marginLeft = "8px";
-            action.append(button, executionLink, inspectionLink, evidenceLink);
+            evidenceLink.textContent = "记录核对";
+            evidenceLink.className = "button-link";
+            actions.append(button, executionLink, inspectionLink, evidenceLink);
+            action.append(actions);
             row.append(action);
             rows.append(row);
         }

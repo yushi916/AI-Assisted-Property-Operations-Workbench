@@ -1,0 +1,29 @@
+/* Scoped to work plans and the rule-based record check. */
+.plan-page .records-table { min-width: 700px; }
+.plan-page #plan-records .records-table { min-width: 780px; }
+.plan-page #plan-records td:nth-child(2) { min-width: 160px; }
+.plan-page .plan-actions { display: grid; grid-template-columns: repeat(2, minmax(100px, 1fr)); gap: 8px; min-width: 220px; }
+.plan-page .plan-actions a, .plan-page .plan-actions button { white-space: nowrap; text-align: center; font-size: 14px; padding: 6px 10px; }
+.plan-page #plan-intake-panel > summary { font-size: 21px; }
+.plan-page #plan-form label { margin: 16px 0; }
+.plan-page #plan-form button { margin-top: 10px; }
+.plan-page #plan-form select[multiple] { min-height: 160px; }
+.plan-page #evidence-summary, .plan-page li { overflow-wrap: anywhere; }
+.entry-help { display: block; }
+.entry-help dt { font-weight: 600; color: var(--ink); margin-top: 12px; }
+.entry-help dd { margin-top: 2px; }
+
+/* Readable citations and in-page originals; full identifiers remain in details. */
+.plan-page .record-citations { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 8px; }
+.plan-page .record-citations a { display: inline-block; }
+.plan-page .finding-label { margin-right: 8px; }
+.plan-page .plan-source { scroll-margin-top: 24px; }
+.plan-page .plan-source:target, .plan-page .plan-source.record-focused { outline: 3px solid #9dc9eb; background: #eff7ff; }
+.plan-page .record-citation:target { outline: 3px solid #9dc9eb; outline-offset: 3px; }
+.plan-page .records-table td details { font-size: 13px; padding: 6px 8px; }
+.plan-page #evidence-findings > li, .plan-page #evidence-comparisons > li { margin-bottom: 18px; }
+
+.plan-page .material-type-label { margin-right: 8px; white-space: nowrap; }
+.plan-page .material-type-plan { background: #eef0fa; color: #494b7d; }
+.plan-page .material-type-execution { background: #eaf3ef; color: #315a48; }
+.plan-page .material-type-inspection { background: #eaf2fa; color: #355577; }

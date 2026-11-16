@@ -1,4 +1,4 @@
-import "./inspections.js";
+import "./inspections.js?v=inspection-layout-1";
 
 const requestedPlanId = new URLSearchParams(window.location.search).get("plan_id");
 const rows = document.querySelector("#inspection-rows");
@@ -10,7 +10,7 @@ const nextButton = document.querySelector("#inspection-next");
 const refreshButton = document.querySelector("#refresh-inspections");
 const pageSize = 10;
 const findings = {
-    no_issue_observed: "未见异常",
+    no_issue_observed: "未发现异常",
     issue_observed: "发现异常",
     unable_to_verify: "无法核实",
 };
@@ -50,7 +50,7 @@ function failureText(error, timeoutMessage) {
 }
 
 function locationText(ids) {
-    if (!ids.length) return "具体点位待核实";
+    if (!ids.length) return "具体地点待核实";
     return ids.map(id => names.has(id)
         ? names.get(id) + "（" + id + "）"
         : id + "（地点名称暂未取得）").join("、");
@@ -77,25 +77,25 @@ function updateButtons() {
 async function openInspection(id) {
     const sequence = ++detailSequence;
     detail.hidden = true;
-    detailMessage.textContent = "正在查询巡查详情…";
+    detailMessage.textContent = "正在查询现场检查详情…";
     try {
         const item = await getJSON("/api/inspections/" + encodeURIComponent(id));
         if (sequence !== detailSequence) return;
         if (item.id !== id || item.plan_id !== plan.id) {
-            throw new Error("巡查记录与当前所选计划不一致，请刷新核对。");
+            throw new Error("现场检查记录与当前所选计划不一致，请刷新核对。");
         }
         showFields("#inspection-detail-fields", [
-            ["巡查编号", item.id], ["提交编号", item.request_id],
-            ["关联计划编号", item.plan_id], ["填报巡查人", item.inspector_name],
-            ["巡查观察", findings[item.finding] ?? item.finding],
-            ["巡查点位（当前台账）", locationText(item.location_id === null ? [] : [item.location_id])],
+            ["现场检查编号", item.id], ["提交编号", item.request_id],
+            ["关联计划编号", item.plan_id], ["检查人员", item.inspector_name],
+            ["现场检查观察", findings[item.finding] ?? item.finding],
+            ["现场检查地点（当前台账）", locationText(item.location_id === null ? [] : [item.location_id])],
             ["观察时间（北京时间）", timeText(item.observed_at)],
             ["录入时间（北京时间）", timeText(item.recorded_at)],
             ["记录版本", item.version],
         ]);
         document.querySelector("#inspection-description").textContent = item.description;
         detail.hidden = false;
-        detailMessage.textContent = "已读取保存的巡查记录。";
+        detailMessage.textContent = "已读取保存的现场检查记录。";
         document.querySelector("#inspection-detail-title").focus();
     } catch (error) {
         if (sequence !== detailSequence) return;
@@ -105,7 +105,7 @@ async function openInspection(id) {
 
 async function loadPage(targetOffset, refreshPlan = false) {
     if (!requestedPlanId) {
-        message.textContent = "请从计划列表选择某项计划，再查看巡查记录。";
+        message.textContent = "请从计划列表选择某项计划，再查看现场检查记录。";
         updateButtons();
         return;
     }
@@ -153,7 +153,7 @@ async function loadPage(targetOffset, refreshPlan = false) {
         if (!Array.isArray(items) || items.some(item =>
             item.plan_id !== plan.id || typeof item.id !== "string"
             || (item.location_id !== null && typeof item.location_id !== "string"))) {
-            throw new Error("巡查列表格式或关联计划异常，请刷新核对。");
+            throw new Error("现场检查列表格式或关联计划异常，请刷新核对。");
         }
         const visible = items.slice(0, pageSize);
         for (const item of visible) {
@@ -182,7 +182,7 @@ async function loadPage(targetOffset, refreshPlan = false) {
         document.querySelector("#inspection-page-label").textContent =
             `第 ${offset / pageSize + 1} 页，本页 ${visible.length} 条`;
         message.textContent = visible.length ? "查询已更新。"
-            : offset === 0 ? "该计划暂无巡查记录。" : "本页没有记录，请返回上一页或刷新。";
+            : offset === 0 ? "该计划暂无现场检查记录。" : "本页没有记录，请返回上一页或刷新。";
     } catch (error) {
         rows.replaceChildren();
         hasNext = false;

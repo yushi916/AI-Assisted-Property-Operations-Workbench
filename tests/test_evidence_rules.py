@@ -57,6 +57,22 @@ class EvidenceRuleTests(unittest.TestCase):
         self.assertEqual(len(result.evidence), 1)
         self.assertTrue(all(not item.execution_ids and not item.inspection_ids for item in result.coverage))
 
+    def test_missing_records_request_verification_before_fieldwork(self):
+        result = self.check()
+        for item in result.findings:
+            with self.subTest(code=item.code, point=item.location_id):
+                self.assertIn("未查到", item.message)
+                self.assertIn("是否遗漏填报", item.message)
+                self.assertNotIn("是否需要补查", item.message)
+                if item.code == "missing_execution":
+                    self.assertEqual(item.message, '本次核对未查到该地点的执行记录。请核实是否已开展工作、是否遗漏填报，再决定是否需要现场核查。')
+                    self.assertLess(item.message.index("是否遗漏填报"), item.message.index("再决定"))
+                else:
+                    self.assertIn("是否已检查", item.message)
+                    self.assertLess(item.message.index("是否遗漏填报"), item.message.index("再对照计划要求"))
+                self.assertEqual([(ref.kind, ref.id, ref.version) for ref in item.evidence],
+                                 [("plan", self.plan.id, self.plan.version)])
+
     def test_deadline_boundary_and_other_service_categories(self):
         for category in ("cleaning", "water_supply", "other"):
             self.plan = self.plan.model_copy(update={"service_category": category})

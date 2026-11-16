@@ -1,5 +1,14 @@
-import "./executions.js";
+import "./executions.js?v=execution-layout-1";
 const requestedPlanId = new URLSearchParams(window.location.search).get("plan_id");
+const returnReportId = new URLSearchParams(window.location.search).get("report_id");
+const validReportId = typeof returnReportId === "string"
+    && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(returnReportId);
+const reportQuery = validReportId ? "&report_id=" + encodeURIComponent(returnReportId) : "";
+if (validReportId) {
+    const back = document.querySelector("#execution-return-report");
+    back.href = "/report-evidence?report_id=" + encodeURIComponent(returnReportId);
+    back.hidden = false;
+}
 const rows = document.querySelector("#execution-rows");
 const message = document.querySelector("#execution-message");
 const detail = document.querySelector("#execution-detail");
@@ -9,9 +18,9 @@ const nextButton = document.querySelector("#execution-next");
 const refreshButton = document.querySelector("#refresh-executions");
 const pageSize = 10;
 const claims = {
-    completed: "声称已完成",
-    partially_completed: "声称部分完成",
-    not_completed: "声称未完成",
+    completed: "执行人员填报：已完成",
+    partially_completed: "执行人员填报：部分完成",
+    not_completed: "执行人员填报：未完成",
     unknown: "完成情况待核实",
 };
 let plan = null;
@@ -50,7 +59,7 @@ function failureText(error, timeoutMessage) {
 }
 
 function locationText(ids) {
-    if (!ids.length) return "具体点位待核实";
+    if (!ids.length) return "具体地点待核实";
     return ids.map(id => names.has(id)
         ? names.get(id) + "（" + id + "）"
         : id + "（地点名称暂未取得）").join("、");
@@ -86,11 +95,11 @@ async function openExecution(id) {
         }
         showFields("#execution-detail-fields", [
             ["执行编号", item.id], ["提交编号", item.request_id],
-            ["关联计划编号", item.plan_id], ["填报执行人", item.executor_name],
-            ["完成声称", claims[item.completion_claim] ?? item.completion_claim],
-            ["执行点位（当前台账）", locationText(item.location_ids)],
-            ["声称开始时间（北京时间）", timeText(item.claimed_started_at)],
-            ["声称完成时间（北京时间）", timeText(item.claimed_finished_at)],
+            ["关联计划编号", item.plan_id], ["执行人员", item.executor_name],
+            ["执行人员填报情况", claims[item.completion_claim] ?? item.completion_claim],
+            ["工作地点（当前台账）", locationText(item.location_ids)],
+            ["工作开始时间（北京时间）", timeText(item.claimed_started_at)],
+            ["工作完成时间（北京时间）", timeText(item.claimed_finished_at)],
             ["录入时间（北京时间）", timeText(item.recorded_at)],
             ["记录版本", item.version],
         ]);
@@ -135,6 +144,13 @@ async function loadPage(targetOffset, refreshPlan = false) {
                 .filter(item => typeof item.display_path === "string")
                 .map(item => [item.id, item.display_path]) : []);
             document.querySelector("#execution-plan-title").textContent = plan.title;
+            document.querySelector("#execution-plan-summary").textContent =
+                `负责人：${plan.owner_name} · 计划时间：${timeText(plan.planned_start_at)} 至 ${timeText(plan.planned_end_at)}（北京时间）`;
+            for (const [selector, path] of [["#execution-inspections-link", "/inspections"], ["#execution-evidence-link", "/plan-evidence"]]) {
+                const link = document.querySelector(selector);
+                link.href = path + "?plan_id=" + encodeURIComponent(plan.id) + reportQuery;
+                link.hidden = false;
+            }
             showFields("#execution-plan-fields", [
                 ["计划编号", plan.id], ["负责人", plan.owner_name],
                 ["计划覆盖地点（当前台账）", locationText(plan.location_ids)],
@@ -193,4 +209,5 @@ async function loadPage(targetOffset, refreshPlan = false) {
 previousButton.addEventListener("click", () => loadPage(Math.max(0, offset - pageSize)));
 nextButton.addEventListener("click", () => loadPage(offset + pageSize));
 refreshButton.addEventListener("click", () => loadPage(0, true));
+document.querySelector("#execution-view-saved").addEventListener("click", () => loadPage(0, true));
 loadPage(0, true);

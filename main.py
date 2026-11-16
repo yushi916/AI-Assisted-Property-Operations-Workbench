@@ -48,7 +48,7 @@ def home(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="index.html",
-        context={"page_title": "物业事项与履约证据工作台"},
+        context={"page_title": "物业运营助手"},
     )
 
 @app.get(
@@ -75,7 +75,7 @@ def plans_page(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="plans.html",
-        context={"page_title": "录入物业计划"},
+        context={"page_title": "工作计划"},
     )
 
 @app.get(
@@ -88,7 +88,7 @@ def executions_page(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="executions.html",
-        context={"page_title": "计划执行记录"},
+        context={"page_title": "工作执行记录"},
     )
 
 @app.get(
@@ -101,7 +101,7 @@ def inspections_page(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="inspections.html",
-        context={"page_title": "计划巡查记录"},
+        context={"page_title": "现场检查记录"},
     )
 
 @app.get(
@@ -114,7 +114,7 @@ def plan_evidence_page(request: Request, plan_id: UUID):
     return templates.TemplateResponse(
         request=request,
         name="plan-evidence.html",
-        context={"page_title": "计划证据核对", "plan_id": str(plan_id)},
+        context={"page_title": "工作计划核查", "plan_id": str(plan_id)},
     )
 
 
@@ -125,5 +125,5 @@ def plan_evidence_page(request: Request, plan_id: UUID):
 def report_evidence_page(request: Request, report_id: UUID):
     return templates.TemplateResponse(
         request=request, name="report-evidence.html",
-        context={"page_title": "报事与履约证据核查", "report_id": str(report_id)},
+        context={"page_title": "报事详情与核查", "report_id": str(report_id)},
     )

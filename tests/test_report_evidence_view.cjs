@@ -81,6 +81,8 @@ test("shows original evidence, independent times, unknown fields and link histor
     assert.equal(p.node("#report-evidence-result").hidden, false);
     assert.equal(p.node("#joint-report-description").textContent, " 合成居民原文 ");
     assert.equal(p.node("#joint-links").children.length, 2);
+    assert.ok(p.node("#joint-plans").children[0].children.some(element =>
+        element.href === "/executions?plan_id=P1&report_id=" + reportId));
     assert.match(p.node("#joint-links").textContent, /选错计划/);
     const text = p.node("#joint-plans").textContent;
     for (const phrase of ["A大堂", "B大堂", "原执行说明", "原巡查说明", "观察时间", "录入时间", "未知，待核实", "原因仍待核实"])
@@ -92,7 +94,7 @@ test("unlinked state retains report and does not claim resolution", async () => 
     const data = sample(); data.links = []; data.linked_plans = [];
     const p = page({data}); await p.ready;
     assert.equal(p.node("#report-evidence-result").hidden, false);
-    assert.match(p.node("#joint-links").textContent, /尚无人工关联/);
+    assert.match(p.node("#joint-links").textContent, /还没有添加或移除计划/);
     assert.match(p.node("#joint-plans").textContent, /不表示问题已经解决/);
 });
 
@@ -145,6 +147,95 @@ test("refresh while busy does not start a duplicate read", async () => {
     await p.refresh(); assert.equal(p.calls.length, 1);
     release(response(200, sample())); await p.ready;
     assert.equal(p.node("#report-evidence-result").hidden, false);
+});
+
+test("明确匹配与地点未知分别计数，保留排除数量", async () => {
+    const data = sample();
+    data.linked_plans[0].inspections.push({
+        ...data.linked_plans[0].inspections[0], id: "I2", location_id: "A",
+    });
+    const p = page({data}); await p.ready;
+    const text = p.node("#joint-plans").textContent;
+    assert.match(text, /工作执行记录\s+本报事地点的记录：1 条；未注明地点的记录：1 条。/);
+    assert.match(text, /现场检查记录\s+本报事地点的记录：1 条；未注明地点的记录：1 条。/);
+    assert.match(text, /其他地点的记录未显示在这里：执行 1 条，现场检查 0 条/);
+});
+
+test("同一执行记录覆盖多个地点仍只计一条", async () => {
+    const data = sample();
+    data.linked_plans[0].executions[0].location_ids = ["A", "B"];
+    const p = page({data}); await p.ready;
+    assert.match(p.node("#joint-plans").textContent,
+        /工作执行记录\s+本报事地点的记录：1 条；未注明地点的记录：1 条。/);
+});
+
+test("范围不匹配时先警告，再展示计划上下文", async () => {
+    const data = sample();
+    const item = data.linked_plans[0];
+    item.scope_matches = false;
+    item.report_comparisons[0] = {
+        execution_id: "E1", relation: "unknown", message: "范围待核实。",
+    };
+    const p = page({data}); await p.ready;
+    const article = p.node("#joint-plans").children[0];
+    assert.equal(article.children[1].className, "scope-warning");
+    assert.match(article.textContent, /暂不比较时间先后/);
+    assert.match(article.textContent, /工作执行记录\s+该计划共有 2 条记录，其中 1 条未注明地点。/);
+    assert.doesNotMatch(article.textContent, /本报事地点的记录：/);
+    assert.doesNotMatch(article.textContent, /其他地点的记录未显示在这里/);
+    assert.match(article.textContent, /原执行说明/);
+});
+
+test("报事地点未知时不把未知巡查算成明确匹配", async () => {
+    const data = sample();
+    data.report.location_id = null;
+    data.linked_plans[0].scope_matches = false;
+    data.linked_plans[0].report_comparisons[0] = {
+        execution_id: "E1", relation: "unknown", message: "地点待核实。",
+    };
+    const p = page({data}); await p.ready;
+    assert.equal(p.node("#report-evidence-result").hidden, false);
+    assert.match(p.node("#joint-plans").textContent,
+        /现场检查记录\s+该计划共有 1 条记录，其中 1 条未注明地点。/);
+    assert.doesNotMatch(p.node("#joint-plans").textContent, /本报事地点的记录：/);
+});
+
+test("多份计划的计数和排除记录分别展示", async () => {
+    const data = sample();
+    const second = JSON.parse(JSON.stringify(data.linked_plans[0]));
+    second.link_id = "L2";
+    second.plan.id = "P2";
+    second.plan.title = "第二份合成计划";
+    second.executions = [];
+    second.report_comparisons = [];
+    second.inspections[0] = {
+        ...second.inspections[0], id: "I2", plan_id: "P2", location_id: "A",
+    };
+    second.excluded_execution_count = 5;
+    second.excluded_inspection_count = 6;
+    data.links.push({...data.links[0], id: "L2", plan_id: "P2"});
+    data.linked_plans.push(second);
+    const p = page({data}); await p.ready;
+    const articles = p.node("#joint-plans").children;
+    assert.equal(articles.length, 2);
+    assert.match(articles[0].textContent, /计划 1：合成保洁计划/);
+    assert.match(articles[0].textContent, /执行 1 条，现场检查 0 条/);
+    assert.match(articles[1].textContent, /计划 2：第二份合成计划/);
+    assert.match(articles[1].textContent,
+        /现场检查记录\s+本报事地点的记录：1 条；未注明地点的记录：0 条。/);
+    assert.match(articles[1].textContent, /执行 5 条，现场检查 6 条/);
+});
+
+test("只有未知记录时明确匹配数为零，原记录仍保留", async () => {
+    const data = sample();
+    data.linked_plans[0].executions.shift();
+    data.linked_plans[0].report_comparisons = [];
+    const p = page({data}); await p.ready;
+    const text = p.node("#joint-plans").textContent;
+    assert.match(text, /工作执行记录\s+本报事地点的记录：0 条；未注明地点的记录：1 条。/);
+    assert.match(text, /现场检查记录\s+本报事地点的记录：0 条；未注明地点的记录：1 条。/);
+    assert.match(text, /执行情况未知/);
+    assert.match(text, /原巡查说明/);
 });
 
 const actionSource = readFileSync(join(__dirname, "..", "static", "report-link-actions.js"), "utf8")
@@ -222,7 +313,7 @@ test("link and revoke use matching context, preserve raw reasons and display cle
             assert.equal(saved.receipt.revocation_request_id, saved.payload.request_id);
         } else assert.equal(saved.receipt.request_id, saved.payload.request_id);
         assert.match(p.node("#link-action-receipt").textContent, /报事编号（report_id）/);
-        assert.match(p.node("#link-action-receipt").textContent, /关联编号（id）/);
+        assert.match(p.node("#link-action-receipt").textContent, /操作记录编号（id）/);
     }
 });
 
@@ -235,7 +326,7 @@ test("422 permits correction with the same submission id for both operations", a
         const first = savedAction(p).payload.request_id;
         assert.equal(savedAction(p).phase, "invalid"); assert.equal(p.node("#link-action-fields").disabled, false);
         assert.equal(p.node("#new-link-action").hidden, false);
-        assert.match(p.node("#new-link-action").textContent, /未保存输入/);
+        assert.match(p.node("#new-link-action").textContent, /放弃输入/);
         p.field("reason").value = "合成修正理由"; await p.submit();
         assert.equal(savedAction(p).phase, "accepted");
         assert.equal(savedAction(p).payload.request_id, first);
@@ -321,7 +412,7 @@ test("accepted reload does not POST and new operation clears only this report dr
     const p = actionPage({post: (path, payload) => response(200,
         {...actionReceipt(path, payload), status: "revoked", version: 2})});
     await p.ready; p.fill(); await p.submit();
-    assert.match(p.node("#link-action-receipt").textContent, /已撤销/);
+    assert.match(p.node("#link-action-receipt").textContent, /已移除/);
     p.store.set("another-report-draft", "keep");
     const restored = actionPage({store: p.store}); await restored.ready;
     assert.equal(restored.posts().length, 0);

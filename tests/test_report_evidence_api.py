@@ -22,9 +22,11 @@ from sqlalchemy.orm import sessionmaker
 from adopt_intake_database import schema_signature
 from agent_evidence import build_agent_evidence, validate_agent_suggestion
 from agent_runner import run_agent
+from automatic_agent_evidence import read_automatic_agent_evidence
+from tests.automatic_suggestion_fixture import automatic_draft
 from database import Base, create_db_engine, engine as project_engine, get_db
 from models import (
-    ExecutionLocation, ExecutionRecord, InspectionRecord, PlanInstance,
+    AgentRun, ExecutionLocation, ExecutionRecord, InspectionRecord, PlanInstance,
     PlanLocation, RequestPlanLink, ServiceRequest,
 )
 from report_evidence_schemas import ReportEvidenceRead
@@ -32,7 +34,6 @@ from routers.agent_runs import get_agent_model, router as agent_runs_router
 from routers.report_evidence import read_report_evidence, router
 from seed_demo_location_hierarchy import seed_demo_location_hierarchy
 from tests.location_reference import create_pre_floor_schema
-from models import AgentRun
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -195,7 +196,7 @@ class ReportEvidenceAPITests(unittest.TestCase):
             db.get(PlanInstance, self.plans[0]).service_category = "water_supply"
         plan = self.client.get(self.url()).json()["linked_plans"][0]
         self.assertFalse(plan["scope_matches"])
-        self.assertTrue(any("重新核实关联" in x for x in plan["warnings"]))
+        self.assertTrue(any("未能对应" in x for x in plan["warnings"]))
         self.assertEqual(plan["report_comparisons"][0]["relation"], "unknown")
 
     def test_all_history_and_evidence_are_read_without_list_pagination(self):
@@ -428,6 +429,7 @@ class ReportEvidenceAPITests(unittest.TestCase):
         model.suggest.assert_not_called()
         self.assertEqual(self.rows(), before)
 
+
     def enable_agent_runs(self):
         before = self.rows()
         config = Config(str(ROOT / "alembic.ini"))
@@ -448,13 +450,12 @@ class ReportEvidenceAPITests(unittest.TestCase):
         self.link()
         executions, _ = self.evidence()
         model = self.enable_agent_runs()
-        model.suggest.return_value = json.dumps({
-            "observations": [{
-                "text": "居民观察晚于声称完成。",
-                "evidence_refs": [f"report:{self.reports[0]}", f"execution:{executions[0]}"],
-            }],
-            "verification_items": ["现场原因仍待核实。"],
-        })
+        with self.sessions() as db:
+            evidence = read_automatic_agent_evidence(db, self.reports[0])
+        model.suggest.return_value = json.dumps(automatic_draft(evidence, observations=[{
+            "text": "居民观察晚于声称完成。",
+            "evidence_refs": [f"report:{self.reports[0]}", f"execution:{executions[0]}"],
+        }], verification_items=["现场原因仍待核实。"]))
         return model
 
     def test_0007_migration_matches_orm_and_keeps_old_rows(self):
@@ -501,6 +502,41 @@ class ReportEvidenceAPITests(unittest.TestCase):
         self.assertEqual(self.client.get(self.agent_runs_url()).json(), [saved])
         self.assertEqual(self.rows(), before)
 
+    def test_invalid_reference_saves_failure_without_suggestion(self):
+        model = self.agent_run_demo()
+        draft = json.loads(model.suggest.return_value)
+        with self.sessions.begin() as db:
+            outside = ServiceRequest(request_id=uuid4(), service_category="cleaning",
+                description="另一地点的报事", source="web", risk_status="unknown",
+                location_id="LOC-B-LOBBY", observed_at=at("09:40"), received_at=at("18:00"))
+            db.add(outside)
+            db.flush()
+            outside_ref = f"report:{outside.id}"
+        draft["observations"][0]["evidence_refs"] = [outside_ref]
+        model.suggest.return_value = json.dumps(draft)
+        response = self.client.post(self.agent_runs_url(), json={"request_id": str(uuid4())})
+        self.assertEqual(response.status_code, 201, response.text)
+        saved = response.json()
+        self.assertEqual(
+            (saved["status"], saved["failure_stage"], saved["error_code"]),
+            ("failed", "validation", "EvidenceReferenceError"),
+        )
+        self.assertIsNone(saved["suggestion"])
+        self.assertEqual(self.client.get(self.agent_runs_url()).json(), [saved])
+
+    def test_reads_failures_written_by_two_round_version(self):
+        self.enable_agent_runs()
+        with self.sessions.begin() as db:
+            for stage in ("tool_request", "tool_dispatch"):
+                db.add(AgentRun(
+                    id=uuid4(), report_id=self.reports[0], status="failed",
+                    model_name="old-test-model", created_at=at("10:00"), finished_at=at("10:01"),
+                    failure_stage=stage, error_code="TestError",
+                ))
+        response = self.client.get(self.agent_runs_url())
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual({row["failure_stage"] for row in response.json()}, {"tool_request", "tool_dispatch"})
+
     def test_replay_reuses_record_and_respects_report_scope(self):
         model = self.agent_run_demo()
         payload = {"request_id": str(uuid4())}
@@ -540,65 +576,6 @@ class ReportEvidenceAPITests(unittest.TestCase):
             self.assertEqual(first.result().json()["status"], "pending_review")
         model.suggest.assert_called_once()
         self.assertEqual(len(self.client.get(self.agent_runs_url()).json()), 1)
-
-    def test_invalid_reference_saves_failure_without_suggestion(self):
-        model = self.agent_run_demo()
-
-        # 引用同库中的另一条报事，但它不属于本次证据快照。
-        draft = json.loads(model.suggest.return_value)
-        draft["observations"][0]["evidence_refs"] = [
-            f"report:{self.reports[1]}"
-        ]
-        model.suggest.return_value = json.dumps(draft)
-
-        response = self.client.post(
-            self.agent_runs_url(),
-            json={"request_id": str(uuid4())},
-        )
-        self.assertEqual(response.status_code, 201, response.text)
-
-        saved = response.json()
-        self.assertEqual(
-            (
-                saved["status"],
-                saved["failure_stage"],
-                saved["error_code"],
-            ),
-            ("failed", "validation", "EvidenceReferenceError"),
-        )
-        self.assertIsNone(saved["suggestion"])
-        self.assertEqual(
-            self.client.get(self.agent_runs_url()).json(),
-            [saved],
-        )
-
-    def test_reads_failures_written_by_two_round_version(self):
-        self.enable_agent_runs()
-
-        # 在临时库中模拟旧版两轮执行器保存的失败记录。
-        with self.sessions.begin() as db:
-            for stage in ("tool_request", "tool_dispatch"):
-                db.add(AgentRun(
-                    id=uuid4(),
-                    report_id=self.reports[0],
-                    status="failed",
-                    model_name="old-test-model",
-                    created_at=at("10:00"),
-                    finished_at=at("10:01"),
-                    failure_stage=stage,
-                    error_code="TestError",
-                ))
-
-        response = self.client.get(self.agent_runs_url())
-        self.assertEqual(response.status_code, 200, response.text)
-        self.assertEqual(
-            {
-                row["failure_stage"]
-                for row in response.json()
-            },
-            {"tool_request", "tool_dispatch"},
-        )
-
 
 if __name__ == "__main__":
     unittest.main()

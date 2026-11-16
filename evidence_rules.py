@@ -11,18 +11,18 @@ from plan_schemas import PlanRead
 
 
 MESSAGES = {
-    "missing_execution": "截至核对时刻，未查到该点位的明确执行记录；是否需要补查，请对照本计划要求确认。",
-    "missing_inspection": "截至核对时刻，未查到该点位的明确巡查记录；是否需要补查，请对照本计划要求确认。",
-    "completion_not_claimed": "执行反馈未声称全部完成，需结合其他记录核对。",
-    "unknown_execution_scope": "执行记录的具体点位待核实，不能当作覆盖全部计划。",
-    "unknown_completion_time": "执行人声称完成，但声称完成时间待核实。",
-    "unknown_inspection_location": "巡查地点待核实，不能作为具体点位的覆盖证据。",
-    "unknown_inspection_time": "巡查观察时间待核实，不能用录入时间代替。",
-    "issue_observed": "巡查填报发现异常；现场情况与原因需要核实。",
-    "completion_after_deadline": "声称完成时间晚于计划截止；需要核对情况。",
-    "completion_before_plan_start": "声称完成时间早于计划开始；需要核对关联和时间。",
-    "execution_outside_scope": "执行点位不在当前计划明确范围内；需要核对范围变化或关联。",
-    "inspection_outside_scope": "巡查点位不在当前计划明确范围内；需要核对范围变化或关联。",
+    "missing_execution": "本次核对未查到该地点的执行记录。请核实是否已开展工作、是否遗漏填报，再决定是否需要现场核查。",
+    "missing_inspection": "截至核对时刻，未查到该地点的明确现场检查记录；请先核实是否已检查、是否遗漏填报，再对照计划要求决定是否需要现场检查。",
+    "completion_not_claimed": "执行人员尚未填报全部完成，需结合其他记录核对。",
+    "unknown_execution_scope": "执行记录的具体地点待核实，不能当作覆盖全部计划。",
+    "unknown_completion_time": "执行人员填报已完成，但填报的完成时间待核实。",
+    "unknown_inspection_location": "现场检查地点待核实，不能作为具体地点的覆盖证据。",
+    "unknown_inspection_time": "现场检查观察时间待核实，不能用录入时间代替。",
+    "issue_observed": "现场检查填报发现异常；现场情况与原因需要核实。",
+    "completion_after_deadline": "填报的完成时间晚于计划截止；需要核对情况。",
+    "completion_before_plan_start": "填报的完成时间早于计划开始；需要核对关联和时间。",
+    "execution_outside_scope": "执行地点不在当前计划明确范围内；需要核对范围变化或关联。",
+    "inspection_outside_scope": "现场检查地点不在当前计划明确范围内；需要核对范围变化或关联。",
 }
 
 
@@ -35,7 +35,7 @@ def check_plan_evidence(
     """只核对传入的完整计划证据集合，不写库，不作履约批准。"""
     if checked_at.utcoffset() is None:
         raise ValueError("核对时间必须带时区")
-    for label, records in (("执行", executions), ("巡查", inspections)):
+    for label, records in (("执行", executions), ("现场检查", inspections)):
         if len({item.id for item in records}) != len(records):
             raise ValueError("重复" + label + "记录")
         if any(item.plan_id != plan.id for item in records):

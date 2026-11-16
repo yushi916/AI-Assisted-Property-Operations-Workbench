@@ -1,0 +1,10 @@
+/* Scoped to report entry/list pages; existing workbench pages keep their styles. */
+.report-page .records-table { min-width: 620px; }
+.report-page .records-table td:nth-child(3) { min-width: 180px; }
+.report-page .report-actions { display: grid; gap: 8px; min-width: 150px; }
+.report-page .report-actions .button-link,
+.report-page .report-actions button { text-align: center; }
+.report-page #report-fields > p { margin: 16px 0; }
+.report-page #location-picker label { margin: 8px 0; }
+.report-page #location-picker button { margin: 8px 8px 0 0; }
+.report-page #report-detail { background: #f8fafc; }

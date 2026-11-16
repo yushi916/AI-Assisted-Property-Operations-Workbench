@@ -40,6 +40,7 @@ function displayTime(value) {
 
 function render() {
     const phase = submission?.phase;
+    if (submission || busy || blocked) document.querySelector("#plan-intake-panel").open = true;
     fields.disabled = blocked || busy || ["pending", "accepted", "conflict"].includes(phase);
     field("location_ids").disabled = !catalogReady;
     sendButton.disabled = blocked || busy || ["accepted", "conflict"].includes(phase)
@@ -188,7 +189,7 @@ form.addEventListener("submit", async event => {
                 throw new Error("回执与本次提交不匹配");
             }
             remember({ ...submission, phase: "accepted", receipt: body,
-                message: "计划已保存，尚未生成执行或巡查记录。" });
+                message: "计划已保存。执行记录和现场检查记录需另行填写。" });
         } else if (response.status === 422) {
             remember({ ...submission, phase: "invalid", message: errorMessage(body) });
         } else if (response.status === 409) {
@@ -221,6 +222,11 @@ newButton.addEventListener("click", () => {
     message.textContent = "可以录入下一项计划。";
     render();
     field("title").focus();
+});
+document.querySelector("#plan-open-form").addEventListener("click", () => {
+    const panel = document.querySelector("#plan-intake-panel");
+    panel.open = true;
+    panel.scrollIntoView?.({block: "start", behavior: "smooth"});
 });
 reloadButton.addEventListener("click", loadLocations);
 loadLocations();

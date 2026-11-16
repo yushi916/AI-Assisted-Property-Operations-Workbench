@@ -21,15 +21,15 @@ def compare_report(report, execution, scope_matches):
     if (not scope_matches or report.location_id not in execution.location_ids
             or report.observed_at is None or execution.claimed_finished_at is None):
         relation = "unknown"
-        message = "地点或观察/声称完成时间尚不明确，不能判断本条报事与该次完成声称的先后关系。"
+        message = "地点或观察/填报的完成时间尚不明确，不能判断本条报事与该次完成填报的先后关系。"
     else:
         observed = report.observed_at.astimezone(UTC)
         finished = execution.claimed_finished_at.astimezone(UTC)
         relation = "before" if observed < finished else "after" if observed > finished else "same_time"
         message = {
-            "before": "居民观察早于声称完成，不能据此否定后续是否完成。",
-            "same_time": "居民观察与声称完成为同一标称时刻，仍需核实现场情况。",
-            "after": "居民观察晚于声称完成；可能再次产生，也需核实原执行效果，不能直接认定未完成或虚报。",
+            "before": "居民看到问题的时间早于执行人员填报的完成时间，不能据此判断后续工作没有完成。",
+            "same_time": "居民观察时间与执行人员填报的完成时间相同，仍需核实当时现场情况。",
+            "after": "居民看到问题的时间晚于执行人员填报的完成时间。可能是后来再次出现，也需核实此前处理效果，不能直接认定未完成或虚报。",
         }[relation]
     return ReportExecutionComparison(execution_id=execution.id, relation=relation, message=message)
 
@@ -57,7 +57,7 @@ def read_report_evidence(report_id: UUID, db: Session) -> ReportEvidenceRead:
                        and report.location_id in evidence.plan.location_ids)
             warnings = []
             if not matches:
-                warnings.append("当前类别或明确地点不再匹配关联计划；以下保留计划上下文，需重新核实关联，不作时间判断。")
+                warnings.append("这项计划的服务类别或地点与本条报事未能对应，记录保留供参考，暂不比较时间先后。")
             executions = sorted((x for x in evidence.executions
                 if not matches or not x.location_ids or report.location_id in x.location_ids),
                 key=lambda x: str(x.id))
@@ -67,11 +67,11 @@ def read_report_evidence(report_id: UUID, db: Session) -> ReportEvidenceRead:
             if report.observed_at is None:
                 warnings.append("报事观察时间待核实，不能使用接收时间代替。")
             if any(not x.location_ids for x in executions) or any(x.location_id is None for x in inspections):
-                warnings.append("地点未知的记录已保留，不能当作本地点已执行或已巡查的证明。")
+                warnings.append("地点未知的记录已保留，不能当作本地点已执行或已现场检查的证明。")
             if matches and not any(report.location_id in x.location_ids for x in executions):
-                warnings.append("本次读取未查到该点位的明确执行记录，请对照计划要求决定是否补查。")
+                warnings.append("本次读取未查到该地点的明确执行记录，请对照计划要求决定是否补查。")
             if matches and not any(x.location_id == report.location_id for x in inspections):
-                warnings.append("本次读取未查到该点位的明确巡查记录，请对照计划要求决定是否补查。")
+                warnings.append("本次读取未查到该地点的明确现场检查记录，请对照计划要求决定是否补查。")
             plans.append(LinkedPlanEvidence(
                 link_id=link.id, plan=evidence.plan, scope_matches=matches,
                 executions=executions, inspections=inspections,

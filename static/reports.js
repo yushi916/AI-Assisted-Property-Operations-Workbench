@@ -8,14 +8,11 @@ const receipt = document.querySelector("#receipt");
 let submission = null;
 let busy = false;
 let blocked = false;
-
 const locationPicker = typeof createLocationPicker === "function"
     ? createLocationPicker(
-        document.querySelector("#location-picker"),
-        field("location_id"),
+        document.querySelector("#location-picker"), field("location_id"),
         () => blocked || fields.disabled,
-    )
-    : null;
+    ) : null;
 
 function field(name) {
     return form.elements.namedItem(name);
@@ -90,6 +87,13 @@ function render() {
     sendButton.textContent = busy ? "正在提交…" : phase === "pending" ? "原样重试本次提交" : "提交报事";
     newButton.hidden = phase !== "accepted";
     receipt.hidden = phase !== "accepted";
+    const viewSaved = document.querySelector("#view-saved-report");
+    viewSaved.hidden = phase !== "accepted";
+    if (phase === "accepted") {
+        viewSaved.href = "/report-evidence?report_id=" + encodeURIComponent(submission.receipt.id);
+    } else {
+        viewSaved.removeAttribute("href");
+    }
     document.querySelector("#retry-note").hidden = phase !== "pending";
     document.querySelector("#submission-reference").hidden = !submission;
     document.querySelector("#request-id").textContent = submission?.payload.request_id ?? "";
@@ -152,12 +156,9 @@ form.addEventListener("submit", async event => {
     try {
         if (submission?.phase !== "pending") {
             if (locationPicker?.hasDraft()) {
-                message.textContent =
-                    "地点查找尚未确认，请点击“确认使用此地点”"
-                    + "或“地点待核实”后再提交。";
+                message.textContent = "地点查找尚未确认，请点击“确认使用此地点”或“地点待核实”后再提交。";
                 return;
             }
-
             if (!form.reportValidity()) return;
             const observed = field("observed_at").value;
             remember({
