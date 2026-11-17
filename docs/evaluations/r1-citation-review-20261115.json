@@ -1,0 +1,597 @@
+{
+  "kind": "offline-citation-review-v1",
+  "evaluation_only": true,
+  "replay_sha256": "0ffd85f333b4ec78f77d77eb2b519a8a71904c67c91464f1d0577a155e784b76",
+  "input_sha256": "82d6655c7e547a18b03d94fa2fb9a80381c062a269d7efc7b77cee83c888267d",
+  "reviewer": "本次协作助手依据保存原文逐条对照，供项目作者复核；不是物业工作人员签核，也不是程序自动语义判定。",
+  "entries": [
+    {
+      "run": 1,
+      "section": "observations",
+      "index": 0,
+      "text": "合成小区 / A区 / 1栋 / 1单元 / 3层 / 302室的居民称，2026-10-13 09:20:00（北京时间）早上洗漱时，厨房和卫生间的冷水龙头都不出水了，家里的总阀没有动过，邻居家什么情况还不清楚。",
+      "evidence_refs": [
+        "report:09cece20-85a5-460b-a916-eba61d2809a7"
+      ],
+      "cited_source_support": "supported",
+      "cited_sources": [
+        {
+          "ref": "report:09cece20-85a5-460b-a916-eba61d2809a7",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        }
+      ],
+      "fact_coverage": "complete",
+      "scope_review": "supported",
+      "note": "W1原文和观察时刻支持厨房、卫生间冷水异常、总阀未动及邻居情况未知；没有扩大为冷热水或全屋异常。",
+      "other_records_to_check": []
+    },
+    {
+      "run": 1,
+      "section": "observations",
+      "index": 1,
+      "text": "合成小区 / A区 / 1栋 / 1单元 / 3层 / 301室的居民称，2026-10-13 09:10:00（北京时间）家里厨房和卫生间都没有冷水，昨天晚上用着还正常，家里没有人在维修。",
+      "evidence_refs": [
+        "report:758b541a-f8a0-4f8a-ad06-91a5d12e832d"
+      ],
+      "cited_source_support": "supported",
+      "cited_sources": [
+        {
+          "ref": "report:758b541a-f8a0-4f8a-ad06-91a5d12e832d",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        }
+      ],
+      "fact_coverage": "complete",
+      "scope_review": "supported",
+      "note": "W2原文支持两处冷水异常、昨晚正常及家中无人维修；位置和观察时刻来自同一报事字段。",
+      "other_records_to_check": []
+    },
+    {
+      "run": 1,
+      "section": "observations",
+      "index": 2,
+      "text": "合成小区 / A区 / 1栋 / 1单元 / 3层 / 公共走廊的居民称，2026-10-13 09:15:00（北京时间）三层公共走廊的清洁水龙头打开后只有很细的一股水，关上再开还是这样，只试了这个龙头，住户家里的情况不清楚。",
+      "evidence_refs": [
+        "report:6d1b876f-e1ad-47cf-9b15-927a6213aab8"
+      ],
+      "cited_source_support": "supported",
+      "cited_sources": [
+        {
+          "ref": "report:6d1b876f-e1ad-47cf-9b15-927a6213aab8",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        }
+      ],
+      "fact_coverage": "complete",
+      "scope_review": "supported",
+      "note": "W3原文保留只试单个公共龙头、住户情况未知；走廊是观察地点，不能据此推断居民住在走廊。",
+      "other_records_to_check": []
+    },
+    {
+      "run": 1,
+      "section": "observations",
+      "index": 3,
+      "text": "执行人员陈浩在合成小区 / A区 / 1栋 / 1单元 / 3层 / 公共走廊查看了走廊公共清洁龙头，当时出水正常；因住户暂时不在家，本次未进入合成小区 / A区 / 1栋 / 1单元 / 3层 / 302室。",
+      "evidence_refs": [
+        "execution:5e49d838-1068-4190-9824-810f4e4a1cd2"
+      ],
+      "cited_source_support": "supported",
+      "cited_sources": [
+        {
+          "ref": "execution:5e49d838-1068-4190-9824-810f4e4a1cd2",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        }
+      ],
+      "fact_coverage": "complete",
+      "scope_review": "supported",
+      "note": "执行填报原文直接支持陈浩本次查看走廊、当时出水正常及因住户不在未进入302室；仅转述这次执行。",
+      "other_records_to_check": []
+    },
+    {
+      "run": 1,
+      "section": "observations",
+      "index": 4,
+      "text": "检查人员许岚在合成小区 / A区 / 1栋 / 1单元 / 3层 / 公共走廊复看走廊公共清洁龙头，出水正常，随后已关闭。",
+      "evidence_refs": [
+        "inspection:c5d98022-7eca-4d42-82d2-e81de5e642d0"
+      ],
+      "cited_source_support": "supported",
+      "cited_sources": [
+        {
+          "ref": "inspection:c5d98022-7eca-4d42-82d2-e81de5e642d0",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        }
+      ],
+      "fact_coverage": "complete",
+      "scope_review": "supported",
+      "note": "许岚这次检查原文支持复看走廊龙头正常并关闭，未被用作室内正常或恢复证明。",
+      "other_records_to_check": []
+    },
+    {
+      "run": 1,
+      "section": "candidate_assessments",
+      "index": 0,
+      "text": "301室报事与302室同处于同一楼栋和相近时间，均反映冷水不出水，值得一起排查供水路径，但症状相似不证明同一原因。",
+      "evidence_refs": [
+        "report:09cece20-85a5-460b-a916-eba61d2809a7",
+        "report:758b541a-f8a0-4f8a-ad06-91a5d12e832d"
+      ],
+      "cited_source_support": "supported",
+      "cited_sources": [
+        {
+          "ref": "report:09cece20-85a5-460b-a916-eba61d2809a7",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        },
+        {
+          "ref": "report:758b541a-f8a0-4f8a-ad06-91a5d12e832d",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        }
+      ],
+      "fact_coverage": "complete",
+      "scope_review": "supported",
+      "note": "W1/W2地点、时间及冷水症状支持提出一起排查；正文明确相似症状不证明同一原因。",
+      "other_records_to_check": []
+    },
+    {
+      "run": 1,
+      "section": "candidate_assessments",
+      "index": 1,
+      "text": "公共走廊清洁龙头水流细与302室室内多处冷水不出水症状不同，且走廊检查出水正常，需暂时分开核查。",
+      "evidence_refs": [
+        "report:09cece20-85a5-460b-a916-eba61d2809a7",
+        "report:6d1b876f-e1ad-47cf-9b15-927a6213aab8"
+      ],
+      "cited_source_support": "supported",
+      "cited_sources": [
+        {
+          "ref": "report:09cece20-85a5-460b-a916-eba61d2809a7",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        },
+        {
+          "ref": "report:6d1b876f-e1ad-47cf-9b15-927a6213aab8",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        }
+      ],
+      "fact_coverage": "incomplete",
+      "scope_review": "supported",
+      "note": "两个已列报事支持症状差异，但都不支持后来走廊检查正常；这项事实缺少具体检查/执行引用。不是引用编号错误。",
+      "other_records_to_check": [
+        "execution:5e49d838-1068-4190-9824-810f4e4a1cd2",
+        "inspection:c5d98022-7eca-4d42-82d2-e81de5e642d0"
+      ]
+    },
+    {
+      "run": 1,
+      "section": "candidate_assessments",
+      "index": 2,
+      "text": "该供水检查计划明确要求分别检查302室与走廊龙头，且走廊已检查出水正常、302室未入户，值得结合计划要求一起核查后续落实情况。",
+      "evidence_refs": [
+        "report:09cece20-85a5-460b-a916-eba61d2809a7",
+        "plan:2aee6f7c-bb52-4aac-b887-d4948c4187d8"
+      ],
+      "cited_source_support": "supported",
+      "cited_sources": [
+        {
+          "ref": "report:09cece20-85a5-460b-a916-eba61d2809a7",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        },
+        {
+          "ref": "plan:2aee6f7c-bb52-4aac-b887-d4948c4187d8",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        }
+      ],
+      "fact_coverage": "incomplete",
+      "scope_review": "needs_clarification",
+      "note": "主报事和计划支持核查对象及计划要求，但计划原文不能证明实际走廊出水正常或本次未入户；缺执行/检查直接引用。“302室未入户”还省略陈浩本次执行的限制。",
+      "other_records_to_check": [
+        "execution:5e49d838-1068-4190-9824-810f4e4a1cd2",
+        "inspection:c5d98022-7eca-4d42-82d2-e81de5e642d0"
+      ]
+    },
+    {
+      "run": 1,
+      "section": "uncertainties",
+      "index": 0,
+      "text": "截至核对时刻，未查到合成小区 / A区 / 1栋 / 1单元 / 3层 / 302室的明确执行记录与现场检查记录，现有材料不能确认该户室内现场实际情况。",
+      "evidence_refs": [
+        "plan:2aee6f7c-bb52-4aac-b887-d4948c4187d8"
+      ],
+      "cited_source_support": "supported",
+      "cited_sources": [
+        {
+          "ref": "plan:2aee6f7c-bb52-4aac-b887-d4948c4187d8",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        }
+      ],
+      "fact_coverage": "complete",
+      "scope_review": "supported",
+      "note": "所引计划的plan_checks明确列出302室缺明确执行/检查记录，支持查询记录缺口；未改成实际未开展工作。限于本次取证范围。",
+      "other_records_to_check": []
+    },
+    {
+      "run": 1,
+      "section": "uncertainties",
+      "index": 1,
+      "text": "设备台账、维修工单与通知系统尚未接入，无法确认共同设备、管网关系及是否有相关维修工作和通知。",
+      "evidence_refs": [
+        "search:assets",
+        "search:work_orders",
+        "search:notices"
+      ],
+      "cited_source_support": "supported",
+      "cited_sources": [
+        {
+          "ref": "search:assets",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        },
+        {
+          "ref": "search:work_orders",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        },
+        {
+          "ref": "search:notices",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        }
+      ],
+      "fact_coverage": "complete",
+      "scope_review": "supported",
+      "note": "三份search记录均为unsupported，支持未接入与不能确认；不能据此说没有维修工作或通知。",
+      "other_records_to_check": []
+    },
+    {
+      "run": 1,
+      "section": "verification_items",
+      "index": 0,
+      "text": "请维修人员前往合成小区 / A区 / 1栋 / 1单元 / 3层 / 302室核实时段内室内冷水供应情况。",
+      "evidence_refs": [],
+      "cited_source_support": "not_applicable",
+      "cited_sources": [],
+      "fact_coverage": "not_applicable",
+      "scope_review": "supported",
+      "note": "这是建议动作，不是既成事实；具体到302室冷水，未把拟开展检查写成已经完成。",
+      "other_records_to_check": []
+    },
+    {
+      "run": 1,
+      "section": "verification_items",
+      "index": 1,
+      "text": "请联系合成小区 / A区 / 1栋 / 1单元 / 3层 / 301室住户进一步核实室内冷水实际状况与共用管道连接关系。",
+      "evidence_refs": [],
+      "cited_source_support": "not_applicable",
+      "cited_sources": [],
+      "fact_coverage": "not_applicable",
+      "scope_review": "needs_clarification",
+      "note": "这是建议动作，不按无引用判漏引。“共用管道连接关系”可更清楚地写成核实是否存在共同连接；这里不是已证实共用的事实断言，作为非阻塞措辞复核项。",
+      "other_records_to_check": []
+    },
+    {
+      "run": 2,
+      "section": "observations",
+      "index": 0,
+      "text": "根据合成小区 / A区 / 1栋 / 1单元 / 3层 / 302室的居民描述（2026-10-13 09:20:00（北京时间）观察），早上洗漱时厨房和卫生间的冷水龙头都不出水，家里的总阀未动过，邻居家情况未知。",
+      "evidence_refs": [
+        "report:09cece20-85a5-460b-a916-eba61d2809a7"
+      ],
+      "cited_source_support": "supported",
+      "cited_sources": [
+        {
+          "ref": "report:09cece20-85a5-460b-a916-eba61d2809a7",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        }
+      ],
+      "fact_coverage": "complete",
+      "scope_review": "supported",
+      "note": "W1原文及observed_at对应的北京时间支持厨房、卫生间冷水异常、总阀未动和邻居情况未知。",
+      "other_records_to_check": []
+    },
+    {
+      "run": 2,
+      "section": "observations",
+      "index": 1,
+      "text": "根据合成小区 / A区 / 1栋 / 1单元 / 3层 / 301室的居民描述（2026-10-13 09:10:00（北京时间）观察），厨房和卫生间都没有冷水，昨天晚上用着正常，家中无人维修。",
+      "evidence_refs": [
+        "report:758b541a-f8a0-4f8a-ad06-91a5d12e832d"
+      ],
+      "cited_source_support": "supported",
+      "cited_sources": [
+        {
+          "ref": "report:758b541a-f8a0-4f8a-ad06-91a5d12e832d",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        }
+      ],
+      "fact_coverage": "complete",
+      "scope_review": "supported",
+      "note": "W2原文及时间字段支持两处冷水异常、昨晚正常及家中无人维修。",
+      "other_records_to_check": []
+    },
+    {
+      "run": 2,
+      "section": "observations",
+      "index": 2,
+      "text": "根据合成小区 / A区 / 1栋 / 1单元 / 3层 / 公共走廊的居民描述（2026-10-13 09:15:00（北京时间）观察），三层公共走廊的清洁水龙头打开后只有很细的一股水，只试了这个龙头，住户家里的情况不清楚。",
+      "evidence_refs": [
+        "report:6d1b876f-e1ad-47cf-9b15-927a6213aab8"
+      ],
+      "cited_source_support": "supported",
+      "cited_sources": [
+        {
+          "ref": "report:6d1b876f-e1ad-47cf-9b15-927a6213aab8",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        }
+      ],
+      "fact_coverage": "complete",
+      "scope_review": "supported",
+      "note": "W3原文支持水流细、只试一个龙头及住户情况不清楚，未推断仅该点异常。",
+      "other_records_to_check": []
+    },
+    {
+      "run": 2,
+      "section": "observations",
+      "index": 3,
+      "text": "根据1栋三层走廊及302室供水检查计划，执行人员陈浩于2026-10-13 09:35:00至09:45:00（北京时间）查看了走廊公共清洁龙头，当时出水正常；因住户暂时不在家，本次未进入302室。",
+      "evidence_refs": [
+        "plan:2aee6f7c-bb52-4aac-b887-d4948c4187d8",
+        "execution:5e49d838-1068-4190-9824-810f4e4a1cd2"
+      ],
+      "cited_source_support": "supported",
+      "cited_sources": [
+        {
+          "ref": "plan:2aee6f7c-bb52-4aac-b887-d4948c4187d8",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        },
+        {
+          "ref": "execution:5e49d838-1068-4190-9824-810f4e4a1cd2",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        }
+      ],
+      "fact_coverage": "complete",
+      "scope_review": "supported",
+      "note": "计划说明检查要求，具体执行引用支持陈浩09:35–09:45走廊出水正常且本次未入302室；两类来源均列出。",
+      "other_records_to_check": []
+    },
+    {
+      "run": 2,
+      "section": "observations",
+      "index": 4,
+      "text": "检查人员许岚于2026-10-13 09:50:00（北京时间）复看走廊公共清洁龙头，出水正常，随后已关闭。",
+      "evidence_refs": [
+        "plan:2aee6f7c-bb52-4aac-b887-d4948c4187d8",
+        "inspection:c5d98022-7eca-4d42-82d2-e81de5e642d0"
+      ],
+      "cited_source_support": "supported",
+      "cited_sources": [
+        {
+          "ref": "plan:2aee6f7c-bb52-4aac-b887-d4948c4187d8",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        },
+        {
+          "ref": "inspection:c5d98022-7eca-4d42-82d2-e81de5e642d0",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        }
+      ],
+      "fact_coverage": "complete",
+      "scope_review": "supported",
+      "note": "检查引用与09:50观察时间支持许岚复看走廊正常并关闭；未证明室内正常。",
+      "other_records_to_check": []
+    },
+    {
+      "run": 2,
+      "section": "candidate_assessments",
+      "index": 0,
+      "text": "301室报事反映同在3层且时间相近的冷水无水症状，值得一起核查其供水关联性。",
+      "evidence_refs": [
+        "report:09cece20-85a5-460b-a916-eba61d2809a7",
+        "report:758b541a-f8a0-4f8a-ad06-91a5d12e832d"
+      ],
+      "cited_source_support": "supported",
+      "cited_sources": [
+        {
+          "ref": "report:09cece20-85a5-460b-a916-eba61d2809a7",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        },
+        {
+          "ref": "report:758b541a-f8a0-4f8a-ad06-91a5d12e832d",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        }
+      ],
+      "fact_coverage": "complete",
+      "scope_review": "supported",
+      "note": "两份报事字段支持同层、近时冷水异常线索；一起核查关联性仍是待验证判断，没有确认同一故障。",
+      "other_records_to_check": []
+    },
+    {
+      "run": 2,
+      "section": "candidate_assessments",
+      "index": 1,
+      "text": "走廊公共龙头水流细的现象与302室室内无水症状存在差异，且执行记录显示公共龙头出水正常，故暂时分开看。",
+      "evidence_refs": [
+        "report:09cece20-85a5-460b-a916-eba61d2809a7",
+        "report:6d1b876f-e1ad-47cf-9b15-927a6213aab8",
+        "execution:5e49d838-1068-4190-9824-810f4e4a1cd2"
+      ],
+      "cited_source_support": "needs_clarification",
+      "cited_sources": [
+        {
+          "ref": "report:09cece20-85a5-460b-a916-eba61d2809a7",
+          "support": "needs_clarification",
+          "note": "原文只支持厨房、卫生间冷水异常；正文“室内无水”缺少限定，不能视为完整等义。"
+        },
+        {
+          "ref": "report:6d1b876f-e1ad-47cf-9b15-927a6213aab8",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        },
+        {
+          "ref": "execution:5e49d838-1068-4190-9824-810f4e4a1cd2",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        }
+      ],
+      "fact_coverage": "needs_clarification",
+      "scope_review": "needs_clarification",
+      "note": "W3和执行记录分别支持公共龙头先前水细、后来执行填报正常，本次具体执行引用齐全；“302室室内无水”省略厨房/卫生间及冷水限定，存在范围歧义。不能据此升级记为明确断言全屋或冷热水均无水。",
+      "other_records_to_check": []
+    },
+    {
+      "run": 2,
+      "section": "candidate_assessments",
+      "index": 2,
+      "text": "专项检查计划对302室未查到明确执行与现场检查记录，需要对照计划要求进行补查。",
+      "evidence_refs": [
+        "report:09cece20-85a5-460b-a916-eba61d2809a7",
+        "plan:2aee6f7c-bb52-4aac-b887-d4948c4187d8"
+      ],
+      "cited_source_support": "supported",
+      "cited_sources": [
+        {
+          "ref": "report:09cece20-85a5-460b-a916-eba61d2809a7",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        },
+        {
+          "ref": "plan:2aee6f7c-bb52-4aac-b887-d4948c4187d8",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        }
+      ],
+      "fact_coverage": "complete",
+      "scope_review": "supported",
+      "note": "计划中的plan_checks支持302室未查到明确执行/检查记录；补查是建议，没有把记录缺失写成实际工作未完成。",
+      "other_records_to_check": []
+    },
+    {
+      "run": 2,
+      "section": "uncertainties",
+      "index": 0,
+      "text": "截至核对时刻，未查到合成小区 / A区 / 1栋 / 1单元 / 3层 / 302室的明确执行记录和现场检查记录，现有材料不能确认该室内现场情况。",
+      "evidence_refs": [
+        "plan:2aee6f7c-bb52-4aac-b887-d4948c4187d8"
+      ],
+      "cited_source_support": "supported",
+      "cited_sources": [
+        {
+          "ref": "plan:2aee6f7c-bb52-4aac-b887-d4948c4187d8",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        }
+      ],
+      "fact_coverage": "complete",
+      "scope_review": "supported",
+      "note": "所引计划的plan_checks支持本次未查到室内明确记录与不能确认现场；没有全局未开展的断言。",
+      "other_records_to_check": []
+    },
+    {
+      "run": 2,
+      "section": "uncertainties",
+      "index": 1,
+      "text": "尚未接入设备台账、维修工单和通知资料，无法确认共同设备、管网关系及是否已发布相关通知。",
+      "evidence_refs": [
+        "search:assets",
+        "search:work_orders",
+        "search:notices"
+      ],
+      "cited_source_support": "supported",
+      "cited_sources": [
+        {
+          "ref": "search:assets",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        },
+        {
+          "ref": "search:work_orders",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        },
+        {
+          "ref": "search:notices",
+          "support": "supported",
+          "note": "支持本条涉及该来源的对应内容；是否覆盖全部事实另见覆盖评审。"
+        }
+      ],
+      "fact_coverage": "complete",
+      "scope_review": "supported",
+      "note": "三份查询记录支持来源尚未接入，不能确认共同设备、管网及相关通知。",
+      "other_records_to_check": []
+    },
+    {
+      "run": 2,
+      "section": "verification_items",
+      "index": 0,
+      "text": "请联系302室居民核实室内冷水实际供应情况，并协调入户检查室内供水设施。",
+      "evidence_refs": [],
+      "cited_source_support": "not_applicable",
+      "cited_sources": [],
+      "fact_coverage": "not_applicable",
+      "scope_review": "supported",
+      "note": "建议先联系302室居民核实冷水并协调入户，不是确认已恢复或已完成检查。",
+      "other_records_to_check": []
+    },
+    {
+      "run": 2,
+      "section": "verification_items",
+      "index": 1,
+      "text": "请维修人员核对合成小区 / A区 / 1栋 / 1单元的供水路径及阀门状态。",
+      "evidence_refs": [],
+      "cited_source_support": "not_applicable",
+      "cited_sources": [],
+      "fact_coverage": "not_applicable",
+      "scope_review": "supported",
+      "note": "建议维修人员核供水路径和阀门，不预设实际连接关系及故障原因已确认。",
+      "other_records_to_check": []
+    }
+  ],
+  "run_reviews": [
+    {
+      "run": 1,
+      "structural_checks": "passed",
+      "content_review": "needs_revision",
+      "note": "程序校验通过；两条判断的已列引用支持对应部分，但仍有执行/检查事实漏引。单次未入户限制和一项建议措辞另有歧义，保留原输出，不追加生成。"
+    },
+    {
+      "run": 2,
+      "structural_checks": "passed",
+      "content_review": "reviewed_with_limitations",
+      "note": "程序校验通过；本次原漏引处已加入具体执行引用，未查到记录的边界保留。室内无水缩写仍有范围歧义，供作者复核，不宣称内容全面通过。"
+    }
+  ],
+  "limitations": [
+    "编号存在不代表引用支持正文；引用支持部分内容不代表所有事实都有充分引用。",
+    "不自动补引用或修改原结果，不写产品数据库，不提供产品人工修正或审计能力。",
+    "本轮材料收尾不代表漏引问题已解决：第1次漏引仍未通过，不能挑选第2次代表全部成功。",
+    "第2次缩写歧义与明确扩大事实分开记录；观察、症状及未开展工作边界仍需人工复核。",
+    "仅有同一输入的2次真实复测，不代表总体稳定或总体准确率；本轮没有新增模型调用。",
+    "评审侧文件只是离线材料；产品中正式人工修正、保存修订与审计流程尚未实现。"
+  ],
+  "source_exports": [
+    {
+      "file": "r1-after-20261115T110646Z-7f2ce1e0.json",
+      "sha256_bytes": "8e4b184273a47aa211b36abcea10c08de799153c3816bb0749da1104c4ffa685"
+    },
+    {
+      "file": "r1-after-20261115T110651Z-08e817c2.json",
+      "sha256_bytes": "892f74572960eb913b9e89d43af27141169b9ed4487b6b8cf70ceb60ac220c63"
+    }
+  ]
+}

@@ -51,7 +51,11 @@ class TestDatabase(unittest.TestCase):
     def test_tables_and_foreign_keys_on_multiple_connections(self):
         self.assertEqual(
             inspect(self.engine).get_table_names(),
-            ["locations", "service_requests"],
+            [
+                "agent_runs", "execution_locations", "execution_records", "inspection_records",
+                "locations", "plan_instances", "plan_locations",
+                "request_plan_links", "service_requests",
+            ],
         )
         with self.engine.connect() as first, self.engine.connect() as second:
             self.assertEqual(

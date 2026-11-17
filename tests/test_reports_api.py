@@ -417,7 +417,7 @@ class TestReportsAPI(unittest.TestCase):
                 "text/html", home.headers["content-type"]
             )
             self.assertIn(
-                "物业事项与履约证据工作台", home.text
+                "物业运营助手", home.text
             )
 
             paths = client.get("/openapi.json").json()["paths"]

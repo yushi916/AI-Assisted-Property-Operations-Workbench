@@ -1,0 +1,121 @@
+{% extends "layout.html" %}
+{% set active_nav = "plans" %}
+{% block title %}工作执行记录 · 物业运营助手{% endblock %}
+{% block content %}
+<div class="execution-page">
+    <nav class="breadcrumb" aria-label="当前位置"><a href="{{ url_for('plans_page') }}">工作计划</a> / 执行记录</nav>
+    <header class="page-heading">
+        <h1>工作执行记录</h1>
+        <p class="muted">查看这项计划已有的执行记录，或新增一次工作情况。填报完成仍需结合现场检查核实。</p>
+        <a id="execution-return-report" class="button-link" hidden>返回报事核查</a>
+    </header>
+    <section id="execution-plan" class="panel" hidden aria-labelledby="execution-plan-title">
+        <div class="panel-heading"><h2 id="execution-plan-title"></h2><span class="source-label">当前计划</span></div>
+        <p id="execution-plan-summary" class="muted"></p>
+        <div class="toolbar"><a id="execution-inspections-link" hidden>现场检查记录</a><a id="execution-evidence-link" hidden>计划记录核对</a></div>
+        <details><summary>查看完整计划</summary>
+            <dl id="execution-plan-fields"></dl>
+            <h3>工作要求</h3><pre id="execution-plan-requirements"></pre>
+        </details>
+    </section>
+    <section id="execution-intake-panel" class="panel" hidden aria-labelledby="execution-intake-title">
+        <div class="panel-heading"><h2 id="execution-intake-title">新增执行记录</h2><div class="toolbar"><button class="primary-button" id="execution-send" type="submit" form="execution-form" disabled>保存执行记录</button><button id="execution-close-form" type="button">收起表单</button></div></div>
+        <p class="muted">填写本次工作的人员、地点和处理情况。不确定的信息保留待核实。</p>
+        <p id="execution-context-message" role="status">正在读取本计划的服务地点。</p>
+        <button id="execution-reload-context" type="button">刷新计划和地点</button>
+    <form id="execution-form">
+        <fieldset id="execution-form-fields" disabled>
+            <legend>执行人员填报</legend>
+            <p><label>执行人员
+                <input name="executor_name" required maxlength="120">
+            </label></p>
+            <p><label>完成情况
+                <select name="completion_claim" required>
+                    <option value="unknown">完成情况待核实</option>
+                    <option value="completed">已完成</option>
+                    <option value="partially_completed">部分完成</option>
+                    <option value="not_completed">未完成</option>
+                </select>
+            </label></p>
+            <p><label>执行情况描述
+                <textarea name="description" required maxlength="2000" rows="4"></textarea>
+            </label></p>
+            <p><label>工作地点是否明确
+                <select name="scope_mode">
+                    <option value="unknown">具体地点待核实</option>
+                    <option value="known">选择已确认的工作地点</option>
+                </select>
+            </label></p>
+            <p><label>本次工作地点（可多选）
+                <select name="location_ids" multiple size="5" disabled></select>
+            </label><br>只能选择当前计划明确覆盖的地点；地点不确定时保留待核实，不能用整个计划的地点代替。</p>
+            <div class="form-grid"><p><label>工作开始时间（北京时间，可留空）
+                <input name="claimed_started_at" type="datetime-local" step="1">
+            </label></p>
+            <p><label>工作完成时间（北京时间，可留空）
+                <input name="claimed_finished_at" type="datetime-local" step="1">
+            </label><br>只有“已完成”才能填写完成时间。这是执行人员提供的工作时间，录入时间由系统另行记录。</p></div>
+        </fieldset>
+
+    </form>
+    </section>
+    <section id="execution-records" class="panel" aria-labelledby="execution-records-title">
+        <div class="panel-heading"><h2 id="execution-records-title">已保存的执行记录</h2>
+            <div class="toolbar">
+                <button id="execution-open-form" class="primary-button" type="button" aria-controls="execution-intake-panel" aria-expanded="false" disabled>新增执行记录</button>
+                <button id="refresh-executions" type="button" disabled>刷新记录</button>
+            </div>
+        </div>
+        <p class="muted">以下记录均属于上方这项计划，按录入时间从新到旧排列。地点未注明的记录也会保留。</p>
+        <div id="execution-submit-feedback" aria-live="polite">
+    <p id="execution-submit-message" role="status" tabindex="-1"></p>
+    <p id="execution-submit-reference" hidden>本次提交编号：
+        <code id="execution-request-id"></code>
+    </p>
+    <p id="execution-retry-note" hidden>结果未确认时，请保留当前标签页并原样重试；刷新后也会恢复本次提交。</p>
+    <section id="execution-receipt" class="receipt-panel" hidden aria-labelledby="execution-receipt-title">
+        <h3 id="execution-receipt-title">本次保存回执</h3>
+        <pre id="execution-receipt-content"></pre>
+    </section>
+    <a id="execution-view-saved" class="button-link" href="#execution-records" hidden>查看已保存记录</a>
+    <button id="execution-new" type="button" hidden>录入下一条执行记录</button>
+
+        </div>
+        <p id="execution-message" role="status" aria-live="polite"></p>
+        <div class="table-scroll" role="region" aria-label="执行记录列表" tabindex="0">
+            <table class="records-table">
+                <caption class="visually-hidden">当前计划的执行记录</caption>
+                <thead>
+                    <tr>
+                        <th>录入时间（北京时间）</th>
+                        <th>执行人员填报情况</th>
+                        <th>执行人员</th>
+                        <th>工作地点（当前台账）</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="execution-rows"></tbody>
+            </table>
+        </div>
+        <nav class="toolbar pagination" aria-label="执行记录分页">
+            <button id="execution-previous" type="button" disabled>上一页</button>
+            <span id="execution-page-label"></span>
+            <button id="execution-next" type="button" disabled>下一页</button>
+        </nav>
+
+    </section>
+        <p id="execution-detail-message" role="status" aria-live="polite"></p>
+        <section id="execution-detail" class="panel" hidden aria-labelledby="execution-detail-title">
+            <h2 id="execution-detail-title" tabindex="-1">执行记录详情</h2>
+            <p><a href="#execution-records">返回记录列表</a></p>
+            <dl id="execution-detail-fields"></dl>
+            <h3>已保存的执行说明</h3>
+            <pre id="execution-description"></pre>
+        </section>
+
+    <noscript><p>请启用 JavaScript 后查看和录入执行记录。</p></noscript>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', path='/execution-list.js') }}?v=execution-layout-1" type="module"></script>
+{% endblock %}

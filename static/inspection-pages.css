@@ -1,0 +1,6 @@
+/* Only the inspection page; no changes to execution or AI result layouts. */
+.inspection-page .records-table { min-width: 700px; }
+.inspection-page #inspection-plan-title { overflow-wrap: anywhere; }
+.inspection-page #inspection-intake-panel > summary { font-size: 21px; }
+.inspection-page #inspection-form-fields > p { margin: 16px 0; }
+.inspection-page #inspection-form-fields label + br { display: none; }

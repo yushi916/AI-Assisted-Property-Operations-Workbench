@@ -1,0 +1,137 @@
+{% extends "layout.html" %}
+{% set active_nav = "reports" %}
+{% block title %}报事详情与核查 · 物业运营助手{% endblock %}
+{% block extra_styles %}<link rel="stylesheet" href="{{ url_for('static', path='/agent-check.css') }}?v=agent-readability-1">{% endblock %}
+{% block content %}
+<div id="report-evidence" data-report-id="{{ report_id }}">
+    <nav class="breadcrumb" aria-label="当前位置">
+        <a href="{{ url_for('reports_page') }}">返回报事列表</a> / 详情与核查
+    </nav>
+    <header class="page-heading">
+        <h1>报事详情与核查</h1>
+        <p>查看居民描述后，可直接点击“AI辅助核查”。系统会自动查找已有记录，无需先选择工作计划。</p>
+    </header>
+    <button id="refresh-report-evidence" class="primary-button" type="button" disabled>刷新记录</button>
+    <p id="report-evidence-message" role="status" aria-live="polite">尚未查询。</p>
+    <div id="report-evidence-result" hidden>
+        <section class="panel" aria-labelledby="report-summary-title">
+            <div class="panel-heading">
+                <h2 id="report-summary-title">1．居民报事</h2>
+                <span class="source-label">原始记录</span>
+            </div>
+            <h3>居民原始描述</h3>
+            <pre id="joint-report-description"></pre>
+            <div id="joint-report-fields"></div>
+        </section>
+    </div>
+    <section class="panel agent-panel" aria-labelledby="agent-runs-title">
+        <div class="panel-heading"><h2 id="agent-runs-title">2．AI辅助核查</h2></div>
+        <p>结合已有报事、工作计划和处理记录，提供初步判断与核查建议，供工作人员复核。</p>
+        <div class="button-row">
+            <button id="generate-agent-run" class="primary-button" type="button" disabled>AI辅助核查</button>
+            <button id="refresh-agent-runs" type="button">查看已保存结果</button>
+        </div>
+        <p id="agent-run-message" role="status" aria-live="polite"></p>
+        <label id="agent-run-history-label" hidden>已保存的核查（最近10次）
+            <select id="agent-run-history"></select>
+        </label>
+        <div id="agent-run-result" hidden>
+            <p id="agent-run-summary" role="status" aria-live="polite"></p>
+            <p id="agent-run-legacy-note" class="scope-warning" hidden></p>
+            <div id="agent-run-draft" hidden>
+                <h3 id="agent-assessments-title">初步判断</h3><ul id="agent-run-assessments"></ul>
+                <h3 id="agent-uncertainties-title">待核实信息</h3><ul id="agent-run-uncertainties"></ul>
+                <h3 id="agent-verification-title">建议核查事项</h3><ol id="agent-run-verification"></ol>
+            </div>
+            <details id="agent-original-details">
+                <summary id="agent-records-title">本次核查依据</summary>
+                <p>包含本条报事和本次读取的业务记录；候选是否相关仍需核实，展开可查看原文。</p>
+                <div id="agent-run-records"></div>
+            </details>
+            <details id="agent-fact-details" hidden>
+                <summary>事实摘要</summary>
+                <p>由AI根据本次记录整理，可点击引用对照原文复核。</p>
+                <ul id="agent-run-observations"></ul>
+            </details>
+            <details id="agent-query-details">
+                <summary>本次查询范围与限制</summary>
+                <p>未找到记录不等于没有开展工作；尚未接入的来源不能当作查过为空。</p>
+                <div id="agent-run-scope"></div>
+            </details>
+            <details id="agent-runtime-details">
+                <summary>运行详情</summary>
+                <p id="agent-run-meta"></p>
+                <p>这里保留生成时使用的记录；补充信息后可发起新核查。建议不会自动建立关联、结案或发布通知，本页尚不支持正式审核。</p>
+            </details>
+        </div>
+    </section>
+    <details id="manual-plan-tools">
+        <summary>补充或调整工作计划（可选）</summary>
+        <p class="muted">AI核查无需先操作这里。系统遗漏的工作安排可由人员补充；移除人员选择不等于永久排除系统候选。</p>
+        <section class="panel" aria-labelledby="joint-plans-title">
+            <div class="panel-heading">
+                <h2 id="joint-plans-title">已补充的工作计划与处理记录</h2>
+                <span class="source-label">系统提示</span>
+            </div>
+            <p class="muted">这里显示工作人员已补充的计划；AI自动找到的记录显示在上方核查结果中。点击记录可展开原文。</p>
+            <div id="joint-plans"></div>
+            <details>
+                <summary id="joint-links-title">查看添加与移除记录</summary>
+                <p class="muted">记录本条报事添加或移除了哪些工作计划。</p>
+                <div id="joint-links"></div>
+            </details>
+        </section>
+        <section class="panel" aria-labelledby="link-action-title">
+            <div class="panel-heading">
+                <h2 id="link-action-title">选择工作计划</h2>
+                <span class="source-label">人员操作</span>
+            </div>
+            <p>系统遗漏了相关安排时，可在这里补充保洁、维修等工作计划。保存后重新核查，选择计划不代表已经确认问题原因。</p>
+            <button id="reload-action-plans" type="button">刷新计划列表</button>
+            <p><a href="{{ url_for('plans_page') }}">录入工作计划</a></p>
+            <p id="action-plan-message" role="status"></p>
+            <form id="link-action-form">
+                <fieldset id="link-action-fields" disabled>
+                    <legend>本次操作</legend>
+                    <label>操作类型
+                        <select name="kind"><option value="link">添加计划</option><option value="revoke">移除计划</option></select>
+                    </label>
+                    <div id="action-plan-choice">
+                        <label>选择工作计划 <select name="plan_id" required></select></label>
+                    </div>
+                    <div id="action-link-choice" hidden>
+                        <label>选择要移除的计划 <select name="link_id"></select></label>
+                    </div>
+                    <p id="remove-plan-note" hidden>仅从本条报事中移除，工作计划和原有记录仍会保留。</p>
+                    <pre id="action-target"></pre>
+                    <p><label>填报人 <input name="actor" required maxlength="120"></label></p>
+                    <p><label><span id="action-reason-label">选择理由</span><br><textarea name="reason" required maxlength="2000" rows="3" cols="60"></textarea></label></p>
+                </fieldset>
+                <button id="send-link-action" class="primary-button" type="submit" disabled>保存选择</button>
+            </form>
+            <p id="link-action-message" role="status" aria-live="polite"></p>
+            <p id="link-action-reference" hidden>本次操作提交编号：<code id="link-action-request-id"></code></p>
+            <p id="link-action-retry-note" hidden>结果尚未确认，请保留当前标签页并原样重试；本页暂存支持刷新后继续。</p>
+            <pre id="link-action-receipt" hidden></pre>
+            <button id="new-link-action" type="button" hidden>开始新操作</button>
+            <p id="new-link-action-note" hidden>开始新操作会清空当前表单，已保存记录保留。请先查看上方最新记录。</p>
+        </section>
+    </details>
+    <noscript><p>请启用 JavaScript 后查看报事和相关记录。</p></noscript>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', path='/report-link-actions.js') }}?v=auto-check-1" type="module"></script>
+<script src="{{ url_for('static', path='/report-agent-runs.js') }}?v=agent-readability-1" type="module"></script>
+{% endblock %}
+
+{% block sidebar %}
+<section class="panel">
+    <h2>工作入口</h2>
+    <nav class="sidebar-links" aria-label="快捷入口">
+        <a href="{{ url_for('home') }}">录入新报事</a>
+        <a href="{{ url_for('reports_page') }}">查看报事列表</a>
+        <a href="{{ url_for('plans_page') }}">录入或查看工作计划</a>
+    </nav>
+</section>
+{% endblock %}

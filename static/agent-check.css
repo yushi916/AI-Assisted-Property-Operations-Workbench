@@ -1,0 +1,17 @@
+.agent-panel { border-top: 3px solid var(--accent); }
+.agent-panel h3 { margin-top: 28px; }
+.agent-panel h4 { margin: 16px 0 8px; }
+.agent-panel label { display: block; margin-top: 20px; }
+.agent-panel select { display: block; box-sizing: border-box; width: 100%; max-width: 100%; margin-top: 6px; padding: 9px; font: inherit; }
+.agent-panel .button-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.agent-panel .button-row button { margin: 0; }
+.agent-record { scroll-margin-top: 30px; }
+.agent-record > summary { line-height: 1.6; }
+.evidence-citations { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 15px; }
+#agent-run-summary { color: var(--ink); font-weight: 600; }
+#agent-run-message { color: var(--ink); }
+#agent-run-meta { overflow-wrap: anywhere; }
+.agent-panel li { margin-bottom: 12px; }
+.agent-panel li > p { margin: 6px 0; }
+#manual-plan-tools { margin: 24px 0; }
+#manual-plan-tools > .panel { margin: 18px 0; }

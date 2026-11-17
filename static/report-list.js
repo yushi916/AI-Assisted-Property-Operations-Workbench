@@ -40,13 +40,16 @@ async function getJSON(path) {
 }
 
 async function getLocationText(id) {
-    if (!id) return "未知，待核实";
+    if (!id) return "地点未注明，需核实";
 
     try {
         const locations = await getJSON("/api/locations");
         const location = locations.find(item => item.id === id);
+        if (location && typeof location.display_path !== "string") {
+            throw new Error("地点格式异常");
+        }
         return location
-            ? `${location.name}（${id}）`
+            ? `${location.display_path}（${id}）`
             : `${id}（当前台账未查到）`;
     } catch {
         return `${id}（地点名称暂无法读取）`;
@@ -75,8 +78,8 @@ async function openReport(id) {
             ["提交编号", report.request_id],
             ["服务类别", categories[report.service_category] ?? report.service_category],
             ["来源", sources[report.source] ?? report.source],
-            ["人员声明风险", risks[report.risk_status] ?? report.risk_status],
-            ["关联地点（当前台账）", place],
+            ["人员声明的风险情况", risks[report.risk_status] ?? report.risk_status],
+            ["报事地点（当前台账）", place],
             ["观察时间（北京时间）", timeText(report.observed_at)],
             ["接收时间（北京时间）", timeText(report.received_at)],
             ["记录版本", report.version],
@@ -92,9 +95,17 @@ async function openReport(id) {
             container.append(term, description);
         }
 
+        const evidenceLink = document.createElement("a");
+        evidenceLink.href = "/report-evidence?report_id=" + encodeURIComponent(report.id);
+        evidenceLink.textContent = "查看详情与核查";
+        const entry = document.createElement("dd");
+        entry.append(evidenceLink);
+        const label = document.createElement("dt");
+        label.textContent = "下一步";
+        container.append(label, entry);
         document.querySelector("#detail-description").textContent = report.description;
         detail.hidden = false;
-        detailMessage.textContent = "已读取保存记录。关联地点和风险声明不代表已经完成核实。";
+        detailMessage.textContent = "已展开报事详情。请点击详情中的“查看详情与核查”，继续查看相关工作计划和处理记录。";
         document.querySelector("#detail-title").focus();
     } catch (error) {
         if (sequence !== detailSequence) return;
@@ -142,9 +153,16 @@ async function loadReports(targetOffset) {
             const action = document.createElement("td");
             const button = document.createElement("button");
             button.type = "button";
-            button.textContent = "查看详情";
+            button.textContent = "展开原始报事";
             button.addEventListener("click", () => openReport(report.id));
-            action.append(button);
+            const evidenceLink = document.createElement("a");
+            evidenceLink.className = "button-link";
+            evidenceLink.href = "/report-evidence?report_id=" + encodeURIComponent(report.id);
+            evidenceLink.textContent = "查看详情与核查";
+            const actions = document.createElement("div");
+            actions.className = "report-actions";
+            actions.append(evidenceLink, button);
+            action.append(actions);
             row.append(action);
             rows.append(row);
         }

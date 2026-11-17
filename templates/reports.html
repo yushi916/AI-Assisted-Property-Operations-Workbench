@@ -1,38 +1,28 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ page_title }}</title>
-    <style>
-        body { max-width: 1000px; margin: 32px auto; padding: 0 20px; font-family: sans-serif; line-height: 1.7; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; vertical-align: top; }
-        button { padding: 6px 12px; margin: 6px; font: inherit; }
-        pre, .description { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; }
-        dd { margin-bottom: 10px; overflow-wrap: anywhere; }
-        .table-scroll { overflow-x: auto; }
-    </style>
-    <script src="{{ url_for('static', path='/report-list.js') }}" defer></script>
-</head>
-<body>
-    <main>
-        <h1>{{ page_title }}</h1>
-        <p>合成数据演示 · 这里只查看已保存报事，尚未进行证据研判。</p>
-        <p><a href="{{ url_for('home') }}">返回报事录入</a></p>
-
-        <button id="refresh-list" type="button">刷新当前页</button>
+{% extends "layout.html" %}
+{% set active_nav = "reports" %}
+{% block title %}报事列表 · 物业运营助手{% endblock %}
+{% block extra_styles %}<link rel="stylesheet" href="{{ url_for('static', path='/report-pages.css') }}?v=report-entry-1">{% endblock %}
+{% block content %}
+<div class="report-page">
+    <header class="page-heading">
+        <h1>报事列表</h1>
+        <p class="muted">选择一条报事进入详情与核查，查看原文、已有依据和已保存的AI建议。</p>
+    </header>
+    <section class="panel" aria-label="已保存报事列表">
+        <div class="toolbar">
+            <a class="button-link" href="{{ url_for('home') }}">录入新报事</a>
+            <button id="refresh-list" type="button">刷新当前页</button>
+        </div>
         <p id="list-message" role="status" aria-live="polite"></p>
-
         <div class="table-scroll">
-            <table>
+            <table class="records-table">
                 <caption>已保存报事，按接收时间从新到旧排列</caption>
                 <thead>
                     <tr>
                         <th>接收时间（北京时间）</th>
                         <th>类别</th>
                         <th>原文摘要</th>
-                        <th>人员声明风险</th>
+                        <th>人员声明的风险情况</th>
                         <th>操作</th>
                     </tr>
                 </thead>
@@ -40,21 +30,39 @@
             </table>
         </div>
 
-        <nav aria-label="报事分页">
+        <nav class="toolbar pagination" aria-label="报事分页">
             <button id="previous-page" type="button" disabled>上一页</button>
             <span id="page-label"></span>
             <button id="next-page" type="button" disabled>下一页</button>
         </nav>
 
         <p id="detail-message" role="status" aria-live="polite"></p>
-        <section id="report-detail" hidden aria-labelledby="detail-title">
+        <section id="report-detail" class="panel" hidden aria-labelledby="detail-title">
             <h2 id="detail-title" tabindex="-1">报事详情</h2>
             <dl id="detail-fields"></dl>
             <h3>已保存的原始描述</h3>
             <pre id="detail-description"></pre>
+            <p>地点和风险情况来自报事记录，仍需核实。</p>
         </section>
 
         <noscript><p>请启用 JavaScript 后查看报事。</p></noscript>
-    </main>
-</body>
-</html>
+    </section>
+</div>
+{% endblock %}
+{% block sidebar %}
+<section class="panel">
+    <h2>工作入口</h2>
+    <nav class="sidebar-links" aria-label="快捷入口">
+        <a href="{{ url_for('home') }}">录入新报事</a>
+        <a href="{{ url_for('plans_page') }}">录入或查看工作计划</a>
+    </nav>
+</section>
+<section class="panel">
+    <h2>查看提示</h2>
+    <p>点击“查看详情与核查”继续处理；也可先展开原始报事。未注明地点或声明风险待核实的记录会保留。</p>
+    <p class="muted">虚构案例演示。AI建议仍需人员复核，正式审核操作尚未接入。</p>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', path='/report-list.js') }}?v=report-entry-1" defer></script>
+{% endblock %}

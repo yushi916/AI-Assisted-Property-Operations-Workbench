@@ -1,0 +1,94 @@
+:root { color-scheme: light; --ink: #243247; --muted: #59677a; --accent: #446a8b; --line: #dbe3eb; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: #f3f6f9; color: var(--ink); font: 16px/1.7 system-ui, "Microsoft YaHei", sans-serif; }
+a { color: var(--accent); text-underline-offset: 3px; }
+a:hover { text-decoration-thickness: 2px; }
+a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid #9dc9eb; outline-offset: 3px; }
+.skip-link { position: absolute; left: 16px; top: -80px; z-index: 10; background: white; padding: 8px 16px; }
+.skip-link:focus { top: 8px; }
+.site-header { background: #527c9f; color: white; }
+.site-nav { max-width: 1160px; margin: auto; padding: 15px 24px; display: flex; align-items: center; gap: 32px; flex-wrap: wrap; }
+.site-nav a { color: #dce7f0; text-decoration: none; }
+.site-nav .brand { color: white; font-size: 20px; font-weight: 700; }
+.nav-links { display: flex; gap: 24px; }
+.nav-links [aria-current="page"] { color: white; text-decoration: underline; text-underline-offset: 9px; }
+.demo-label { margin-left: auto; color: #dce7f0; font-size: 13px; }
+.workspace { max-width: 1160px; margin: 32px auto 48px; padding: 0 24px; display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 28px; align-items: start; }
+#main-content { min-width: 0; }
+.sidebar { position: sticky; top: 24px; }
+.sidebar .panel:first-child { margin-top: 0; }
+.sidebar h2 { font-size: 18px; }
+.sidebar-links { display: grid; gap: 10px; }
+.sidebar-links a { text-decoration: none; }
+.sidebar-links a:hover { text-decoration: underline; }
+.breadcrumb { margin: 0 0 12px; color: var(--muted); font-size: 14px; }
+.page-heading { margin-bottom: 24px; }
+h1 { margin: 0 0 8px; font-size: 28px; line-height: 1.4; }
+h2 { margin: 0 0 12px; font-size: 21px; }
+h3 { margin: 18px 0 10px; font-size: 18px; }
+h4, h5 { font-size: 16px; margin: 16px 0 8px; }
+p { margin: 10px 0; }
+.muted { color: var(--muted); }
+.scope-warning { padding: 12px 14px; background: #fff5e6; border-left: 4px solid #b77313; color: #754500; border-radius: 4px; }
+.panel { margin: 20px 0; padding: 24px; background: white; border: 1px solid var(--line); border-radius: 6px; }
+.panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+.panel-heading h2 { margin: 0; }
+.source-label { display: inline-block; padding: 2px 9px; border-radius: 5px; background: #edf2f7; color: #425773; font-size: 13px; }
+.agent-panel { border-top: 3px solid #7c6aad; }
+.agent-panel .source-label { background: #f1edf8; color: #65508b; }
+button { min-height: 42px; padding: 8px 14px; border: 1px solid #aebdcb; border-radius: 6px; background: white; color: var(--ink); font: inherit; cursor: pointer; }
+button:hover:enabled { background: #eef3f7; }
+button:disabled { opacity: .55; cursor: not-allowed; }
+.primary-button { color: white; background: var(--accent); border-color: var(--accent); }
+.primary-button:hover:enabled { background: #244c6d; }
+.toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+fieldset { min-width: 0; margin: 16px 0; padding: 16px; border: 1px solid var(--line); border-radius: 8px; }
+legend { padding: 0 6px; color: var(--muted); }
+label { display: block; }
+input, select, textarea { display: block; width: 100%; max-width: 100%; margin-top: 6px; padding: 9px 11px; border: 1px solid #aebdcb; border-radius: 6px; background: white; color: var(--ink); font: inherit; }
+textarea { resize: vertical; }
+dl { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 8px 20px; margin: 16px 0; }
+dt { color: var(--muted); }
+dd { margin: 0; }
+pre { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; }
+dd, li, summary, code { overflow-wrap: anywhere; }
+article { margin: 16px 0; padding: 20px; border: 1px solid var(--line); border-radius: 8px; }
+article > h3:first-child { margin-top: 0; }
+details { margin: 14px 0; padding: 12px 14px; background: #f8fafc; border: 1px solid var(--line); border-radius: 6px; }
+summary { cursor: pointer; font-weight: 600; }
+[role="status"] { color: var(--muted); }
+.site-footer { padding: 20px 24px; border-top: 1px solid var(--line); color: var(--muted); text-align: center; font-size: 13px; }
+@media (max-width: 900px) {
+    .workspace { grid-template-columns: minmax(0, 1fr); }
+    .sidebar { position: static; }
+}
+@media (max-width: 640px) {
+    .site-nav { gap: 12px 24px; padding: 14px 16px; }
+    .demo-label { margin-left: 0; }
+    .workspace { margin-top: 24px; padding: 0 16px; }
+    .panel { padding: 18px; }
+    dl { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+    dd { margin-bottom: 10px; }
+}
+
+/* Reusable controls for the pages moving to the shared layout. */
+.button-link { display: inline-block; padding: 8px 14px; min-height: 42px; border: 1px solid #aebdcb; border-radius: 6px; background: white; text-decoration: none; }
+.button-link:hover { background: #eef3f7; }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 20px; }
+.form-grid > p { min-width: 0; }
+.execution-page #execution-plan-title { overflow-wrap: anywhere; }
+.table-scroll { overflow-x: auto; }
+.records-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.records-table th, .records-table td { text-align: left; vertical-align: top; padding: 13px 12px; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+.records-table th { color: #425773; font-weight: 600; background: #f5f8fb; }
+.records-table tbody tr:hover { background: #f8fafc; }
+.records-table td:first-child { min-width: 125px; }
+.pagination { margin-top: 18px; }
+.receipt-panel { margin: 16px 0; padding: 16px; background: #f5f8fb; border-left: 3px solid var(--accent); border-radius: 4px; }
+.receipt-panel h3 { margin-top: 0; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (max-width: 640px) {
+    .form-grid { grid-template-columns: minmax(0, 1fr); }
+    .execution-page .records-table { min-width: 620px; }
+}

@@ -1,0 +1,127 @@
+{% extends "layout.html" %}
+{% set active_nav = "plans" %}
+{% block title %}现场检查记录 · 物业运营助手{% endblock %}
+{% block extra_styles %}<link rel="stylesheet" href="{{ url_for('static', path='/inspection-pages.css') }}?v=inspection-layout-1">{% endblock %}
+{% block content %}
+<div class="inspection-page">
+    <nav class="breadcrumb" aria-label="当前位置"><a href="{{ url_for('plans_page') }}">工作计划</a> / 现场检查记录</nav>
+    <header class="page-heading">
+        <h1>现场检查记录</h1>
+        <p class="muted">查看本计划的检查记录，或新增一次现场观察。检查结果只描述当时、该地点的情况。</p>
+        <div class="toolbar">
+            <button id="inspection-open-form" class="primary-button" type="button" aria-controls="inspection-intake-panel">新增现场检查记录</button>
+            <a id="inspection-return-report" class="button-link" hidden>返回报事核查</a>
+        </div>
+    </header>
+    <section id="inspection-plan" class="panel" hidden>
+        <h2 id="inspection-plan-title"></h2>
+        <details><summary>查看完整计划</summary>
+            <dl id="inspection-plan-fields"></dl>
+            <h3>已保存的计划要求</h3>
+            <pre id="inspection-plan-requirements"></pre>
+        </details>
+    </section>
+    <section id="inspection-records" class="panel" aria-labelledby="inspection-records-title">
+        <h2 id="inspection-records-title">已保存的现场检查记录</h2>
+        <button id="refresh-inspections" type="button" disabled>刷新记录</button>
+        <p id="inspection-message" role="status" aria-live="polite"></p>
+        <div class="table-scroll">
+            <table class="records-table">
+                <caption>按录入时间从新到旧排列；地点未知的记录也会保留</caption>
+                <thead>
+                    <tr>
+                        <th>录入时间（北京时间）</th>
+                        <th>观察时间（北京时间）</th>
+                        <th>检查结果</th>
+                        <th>填报检查人</th>
+                        <th>现场检查地点（当前台账）</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="inspection-rows"></tbody>
+            </table>
+        </div>
+        <nav class="toolbar pagination" aria-label="现场检查记录分页">
+            <button id="inspection-previous" type="button" disabled>上一页</button>
+            <span id="inspection-page-label"></span>
+            <button id="inspection-next" type="button" disabled>下一页</button>
+        </nav>
+
+        <p id="inspection-detail-message" role="status" aria-live="polite"></p>
+        <section id="inspection-detail" class="panel" hidden aria-labelledby="inspection-detail-title">
+            <h2 id="inspection-detail-title" tabindex="-1">现场检查记录详情</h2>
+            <dl id="inspection-detail-fields"></dl>
+            <h3>已保存的现场检查说明</h3>
+            <pre id="inspection-description"></pre>
+        </section>
+    </section>
+        <details id="inspection-intake-panel" class="panel">
+            <summary id="inspection-intake-title">新增现场检查记录</summary>
+            <p>一条记录对应一个地点；不同地点请分别填写。地点或时间不清楚时保留待核实。</p>
+            <p id="inspection-context-message" role="status">正在读取本计划的覆盖地点。</p>
+            <button id="inspection-reload-context" type="button">刷新计划和地点</button>
+
+            <form id="inspection-form">
+                <fieldset id="inspection-form-fields" disabled>
+                    <legend>检查人员提供的信息</legend>
+                    <p><label>检查人
+                        <input name="inspector_name" required maxlength="120">
+                    </label></p>
+                    <p><label>检查结果
+                        <select name="finding" required>
+                            <option value="unable_to_verify">无法核实</option>
+                            <option value="no_issue_observed">未发现异常</option>
+                            <option value="issue_observed">发现异常</option>
+                        </select>
+                    </label></p>
+                    <p><label>现场检查说明
+                        <textarea name="description" required maxlength="2000" rows="4"></textarea>
+                    </label></p>
+                    <p><label>检查地点是否明确
+                        <select name="scope_mode">
+                            <option value="unknown">具体地点待核实</option>
+                            <option value="known">选择一个已确认的检查地点</option>
+                        </select>
+                    </label></p>
+                    <p><label>本次检查地点
+                        <select name="location_id" disabled></select>
+                    </label></p>
+                    <p><label>观察时间（北京时间，可留空）
+                        <input name="observed_at" type="datetime-local" step="1">
+                    </label><br>留空表示待核实，不使用录入时间代替。</p>
+                </fieldset>
+                <button class="primary-button" id="inspection-send" type="submit" disabled>保存现场检查记录</button>
+            </form>
+
+            <p id="inspection-submit-message" role="status"></p>
+            <p id="inspection-submit-reference" hidden>本次提交编号：
+                <code id="inspection-request-id"></code>
+            </p>
+            <p id="inspection-retry-note" hidden>结果未确认时，请保留当前标签页并原样重试；刷新后也会恢复本次提交。</p>
+            <section id="inspection-receipt" class="receipt-panel" hidden aria-labelledby="inspection-receipt-title">
+                <h3 id="inspection-receipt-title">本次保存回执</h3>
+                <pre id="inspection-receipt-content"></pre>
+                <p><a href="#inspection-records">查看已保存记录</a>（可点击列表上方“刷新记录”读取新增内容）</p>
+            </section>
+            <button id="inspection-new" type="button" hidden>录入下一条现场检查记录</button>
+        </details>
+    <noscript><p>请启用 JavaScript 后使用现场检查记录。</p></noscript>
+</div>
+{% endblock %}
+{% block sidebar %}
+<section class="panel">
+    <h2>工作入口</h2>
+    <nav class="sidebar-links" aria-label="快捷入口">
+        <a href="{{ url_for('plans_page') }}">查看工作计划</a>
+        <a href="{{ url_for('reports_page') }}">查看报事列表</a>
+    </nav>
+</section>
+<section class="panel">
+    <h2>记录范围</h2>
+    <p>计划可覆盖多个地点；每条检查只填写本次实际检查的一个地点。地点或时间不清楚时保留待核实。</p>
+    <p class="muted">虚构案例演示。未发现异常不代表整项计划完成，也不能证明其他地点正常。</p>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', path='/inspection-list.js') }}?v=inspection-layout-1" type="module"></script>
+{% endblock %}
