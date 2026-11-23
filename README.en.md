@@ -12,11 +12,21 @@ A resident in **Room 302** reports that the cold-water taps in the kitchen and b
 
 The system searches for potentially related reports and work plans. In this example, Gemini suggests reviewing a similar report from **Room 301** alongside the Room 302 issue, while examining a corridor water-flow report separately. Its assessment links back to the records used for each recommendation.
 
-![AI-assisted assessment of the Room 302 water-supply report, with source references](docs/images/room-302-ai-review.png)
+<p align="center">
+  <a href="docs/images/room-302-ai-review.png">
+    <img src="docs/images/room-302-ai-review.png" alt="AI-assisted assessment of Room 302 with source references · Click to view full size" width="740">
+  </a>
+  <br><sub>AI-assisted assessment of Room 302 with source references · Click to view full size</sub>
+</p>
 
 The same work plan covers Room 302 and the third-floor corridor, but the saved records differ by location. A separate, **rule-based** check finds an execution record for the corridor and a site inspection for Room 302, with no execution record explicitly assigned to Room 302 in the current query. Staff can inspect the original records before deciding what to verify on site.
 
-![Rule-based comparison of execution and inspection records by location and time](docs/images/plan-evidence-coverage.png)
+<p align="center">
+  <a href="docs/images/plan-evidence-coverage.png">
+    <img src="docs/images/plan-evidence-coverage.png" alt="Rule-based comparison of execution and inspection records · Click to view full size" width="740">
+  </a>
+  <br><sub>Rule-based comparison of execution and inspection records · Click to view full size</sub>
+</p>
 
 ## System architecture
 
@@ -41,35 +51,66 @@ Both review paths use the same business records but run separately. **Plan recor
 - **Traceability:** Saved runs retain the evidence snapshot, citations, output and status. Staff can reopen earlier results and inspect source records; adding new records does not change an older snapshot. Failed runs retain their stage and error category for diagnosis.
 
 <details>
-<summary>More interface screenshots</summary>
+<summary>More interface screenshots (click to view full size)</summary>
 
-**Service request list**
-
-![Service request list](docs/images/service-request-list.png)
-
-**Work plan list**
-
-![Work plan list](docs/images/work-plan-list.png)
-
-**Room 302: original resident report**
-
-![Room 302 report detail](docs/images/room-302-report-detail.png)
-
-**Execution record and site inspections for the water-supply plan**
-
-![Execution record for the water-supply plan](docs/images/work-execution-record.png)
-
-![Site inspections for the water-supply plan](docs/images/site-inspection-record.png)
-
-**Information gaps and suggested follow-up checks**
-
-![AI follow-up recommendations](docs/images/room-302-ai-follow-up.png)
-
-**Detailed rule-check findings and source records**
-
-![Plan evidence findings](docs/images/plan-evidence-findings.png)
-
-![Plan evidence sources and record versions](docs/images/plan-evidence-sources.png)
+<table>
+<tr>
+  <td align="center" width="50%" valign="top">
+    <strong>Service request list</strong><br>
+    <a href="docs/images/service-request-list.png">
+      <img src="docs/images/service-request-list.png" alt="Service request list" width="340">
+    </a>
+  </td>
+  <td align="center" width="50%" valign="top">
+    <strong>Work plan list</strong><br>
+    <a href="docs/images/work-plan-list.png">
+      <img src="docs/images/work-plan-list.png" alt="Work plan list" width="340">
+    </a>
+  </td>
+</tr>
+<tr>
+  <td align="center" width="50%" valign="top">
+    <strong>Room 302 report details</strong><br>
+    <a href="docs/images/room-302-report-detail.png">
+      <img src="docs/images/room-302-report-detail.png" alt="Room 302 report details" width="340">
+    </a>
+  </td>
+  <td align="center" width="50%" valign="top">
+    <strong>Execution records</strong><br>
+    <a href="docs/images/work-execution-record.png">
+      <img src="docs/images/work-execution-record.png" alt="Execution records" width="340">
+    </a>
+  </td>
+</tr>
+<tr>
+  <td align="center" width="50%" valign="top">
+    <strong>Site inspection records</strong><br>
+    <a href="docs/images/site-inspection-record.png">
+      <img src="docs/images/site-inspection-record.png" alt="Site inspection records" width="340">
+    </a>
+  </td>
+  <td align="center" width="50%" valign="top">
+    <strong>AI follow-up recommendations</strong><br>
+    <a href="docs/images/room-302-ai-follow-up.png">
+      <img src="docs/images/room-302-ai-follow-up.png" alt="AI follow-up recommendations" width="340">
+    </a>
+  </td>
+</tr>
+<tr>
+  <td align="center" width="50%" valign="top">
+    <strong>Rule-check findings</strong><br>
+    <a href="docs/images/plan-evidence-findings.png">
+      <img src="docs/images/plan-evidence-findings.png" alt="Rule-check findings" width="340">
+    </a>
+  </td>
+  <td align="center" width="50%" valign="top">
+    <strong>Source records and versions</strong><br>
+    <a href="docs/images/plan-evidence-sources.png">
+      <img src="docs/images/plan-evidence-sources.png" alt="Source records and versions" width="340">
+    </a>
+  </td>
+</tr>
+</table>
 
 </details>
 
