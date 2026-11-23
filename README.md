@@ -12,11 +12,21 @@
 
 系统根据已有记录查找相关报事和候选计划。在这个案例中，Gemini 建议将 **301 室**类似的供水问题与 302 室一起核查；三层公共走廊的水流情况则建议暂时分开查看。每项初步判断都附有原始记录链接，方便工作人员核对。
 
-![302 室供水报事的 AI 初步判断及依据引用](docs/images/room-302-ai-review.png)
+<p align="center">
+  <a href="docs/images/room-302-ai-review.png">
+    <img src="docs/images/room-302-ai-review.png" alt="302 室供水报事：AI 初步判断与依据 · 点击查看高清原图" width="740">
+  </a>
+  <br><sub>302 室供水报事：AI 初步判断与依据 · 点击查看高清原图</sub>
+</p>
 
 相关供水检查计划同时覆盖 **302 室和三层公共走廊**，但两处保存的执行、检查记录并不相同。**独立的程序规则核对**显示：公共走廊有明确的执行记录，302 室有现场检查记录；本次查询未找到明确对应 302 室的执行记录。工作人员可以进一步查看原文，确认实际开展了哪些工作。
 
-![程序按地点和时间核对执行与现场检查记录](docs/images/plan-evidence-coverage.png)
+<p align="center">
+  <a href="docs/images/plan-evidence-coverage.png">
+    <img src="docs/images/plan-evidence-coverage.png" alt="按地点核对执行与现场检查记录 · 点击查看高清原图" width="740">
+  </a>
+  <br><sub>按地点核对执行与现场检查记录 · 点击查看高清原图</sub>
+</p>
 
 ## 系统设计
 
@@ -41,35 +51,66 @@ flowchart TD
 - **结果与依据保存：** 每次运行保存证据快照、引用、核查结果和状态，支持查看历史结果。后续新增业务记录也不会改变此前保存的证据快照。失败运行会记录发生阶段和错误类别，方便定位问题。
 
 <details>
-<summary>更多页面截图</summary>
+<summary>更多页面截图（点击图片查看高清原图）</summary>
 
-**居民报事列表**
-
-![居民报事列表](docs/images/service-request-list.png)
-
-**工作计划列表**
-
-![工作计划列表](docs/images/work-plan-list.png)
-
-**302 室报事原文与详情**
-
-![302 室报事详情](docs/images/room-302-report-detail.png)
-
-**供水检查计划的执行记录与现场检查**
-
-![工作执行记录](docs/images/work-execution-record.png)
-
-![现场检查记录](docs/images/site-inspection-record.png)
-
-**AI 待核实信息与后续建议**
-
-![AI 核查建议](docs/images/room-302-ai-follow-up.png)
-
-**规则核对的问题提示与原始依据**
-
-![计划记录核对的问题提示](docs/images/plan-evidence-findings.png)
-
-![计划核对依据与版本信息](docs/images/plan-evidence-sources.png)
+<table>
+<tr>
+  <td align="center" width="50%" valign="top">
+    <strong>居民报事列表</strong><br>
+    <a href="docs/images/service-request-list.png">
+      <img src="docs/images/service-request-list.png" alt="居民报事列表" width="340">
+    </a>
+  </td>
+  <td align="center" width="50%" valign="top">
+    <strong>工作计划列表</strong><br>
+    <a href="docs/images/work-plan-list.png">
+      <img src="docs/images/work-plan-list.png" alt="工作计划列表" width="340">
+    </a>
+  </td>
+</tr>
+<tr>
+  <td align="center" width="50%" valign="top">
+    <strong>302 室报事详情</strong><br>
+    <a href="docs/images/room-302-report-detail.png">
+      <img src="docs/images/room-302-report-detail.png" alt="302 室报事详情" width="340">
+    </a>
+  </td>
+  <td align="center" width="50%" valign="top">
+    <strong>工作执行记录</strong><br>
+    <a href="docs/images/work-execution-record.png">
+      <img src="docs/images/work-execution-record.png" alt="工作执行记录" width="340">
+    </a>
+  </td>
+</tr>
+<tr>
+  <td align="center" width="50%" valign="top">
+    <strong>现场检查记录</strong><br>
+    <a href="docs/images/site-inspection-record.png">
+      <img src="docs/images/site-inspection-record.png" alt="现场检查记录" width="340">
+    </a>
+  </td>
+  <td align="center" width="50%" valign="top">
+    <strong>AI 待核实信息及建议</strong><br>
+    <a href="docs/images/room-302-ai-follow-up.png">
+      <img src="docs/images/room-302-ai-follow-up.png" alt="AI 待核实信息及建议" width="340">
+    </a>
+  </td>
+</tr>
+<tr>
+  <td align="center" width="50%" valign="top">
+    <strong>规则核对的问题提示</strong><br>
+    <a href="docs/images/plan-evidence-findings.png">
+      <img src="docs/images/plan-evidence-findings.png" alt="规则核对的问题提示" width="340">
+    </a>
+  </td>
+  <td align="center" width="50%" valign="top">
+    <strong>核对依据与记录版本</strong><br>
+    <a href="docs/images/plan-evidence-sources.png">
+      <img src="docs/images/plan-evidence-sources.png" alt="核对依据与记录版本" width="340">
+    </a>
+  </td>
+</tr>
+</table>
 
 </details>
 
